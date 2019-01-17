@@ -56,16 +56,19 @@ Are:
     - Useful for classifying (grouping) and counting
     - No order
     - Often assigned numerical id's
+    - Mode can be calculated
   - Ordinal
     - **Qualitative**
     - Ordered
     - Magnitude between values is indeterminable
+    - Median can be calculated
   - Interval
     - Quantitative
     - Includes properties of ordinal scale
     - **Difference** between values is constant
     - 0 is arbitrary, does not indicate absence of characteristic
     - Ratios do not make sense
+    - Mean can be calculated
   - Ratio
     - Quantitative
     - Includes properties of ordinal scale
