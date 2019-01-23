@@ -83,4 +83,12 @@ Methods include:
 - If range is known, stdev is approximately = range/6
 ### **Measures for gouped data**
 
-### **Position measures**
+- For cases when analyzing a frequency distribution is important
+- Observations in classes are represented by their midpoint
+
+Measures are only approximates of the real measures; they are:
+
+- Mean:
+  - Sum of products of class frequency and midpoint, divided by all observations
+- Standard deviation:
+  - Square root of the sum of products between class frequency and squared difference with mean, divided by sample - 1
