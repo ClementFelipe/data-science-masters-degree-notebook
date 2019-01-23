@@ -5,7 +5,7 @@ Ways to describe quantitative data, which can be measures of central tendency or
 Are:
 
 - Often called an average of data
-- used to find the "center" of the data
+- Used to find the "center" of the data
 - Not enough to make decisions over data (dispersion must be taken into account)
 
 Can be:
@@ -31,16 +31,56 @@ Can be:
   - Atypical values (small/large) do not affect it
   - A mode can not exist when observations do not repeat or repeat very little
   - Bimodal: Two modes
-- Geometric mean
+- Geometric mean (GM)
+  - For relative values (percentages, rates, etc)
+  - n<sup>th</sup> root of the product of all data
+  - Always <= than arithmetic mean
+  - All data must be positive
+  - Rate of growth: n<sup>th</sup> root of division of last period by first
 
 ### **Dispersion measures**
-Used to find the dispersion of data; methods include:
+
+- Used to find the dispersion of data
+- Gives more complete image of data
+- Used to find how representative a central tendency measure is
+- Can be used to compare two distributions
+
+Methods include:
 
 - Range
-- Mean absolute deviation
+  - Max value - min value
+  - Only takes into account two values (disadvantage)
+- Mean absolute deviation (MAD)
+  - Represents mean deviation from the mean
+  - Takes into account all values
+  - Sum of all differences from the mean, divided by number of observations
 - Variance
+  - More sensitive to dispersion than MAD
+  - Will result in squared units of the characteristic
+  - Sum of all squared differences with the mean, divided by number of observations
+  - Can be for:
+    - Population (s<sup>2</sup>)
+    - Sample (σ<sup>2</sup>): Subtract 1 from sample
 - Standard deviation
+  - Used to compare dispersion between two or more sets of observations
+  - Same units as characteristic
+  - Square root of variance
 
 #### *Chebyshev theorem and empirical rule*
 
+- Used to determine what percentage of the data is *k* products over and under than the mean
+- Shape of the distribution is irrelevant
+- 1 - 1/(k<sup>2</sup>)
+#### *Variation coefficient*
+
+- Standard deviation divided by mean
+- Gives dispersion of data
+- Empirical rule:
+  - In normal distribution
+  - 1 stdev -> 68% of data
+  - 2 stdev -> 95% of data
+  - 3 stdev -> 99.7% of data
+- If range is known, stdev is approximately = range/6
 ### **Measures for gouped data**
+
+### **Position measures**
