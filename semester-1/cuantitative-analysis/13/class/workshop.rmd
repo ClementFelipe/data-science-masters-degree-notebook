@@ -1,0 +1,50 @@
+---
+title: "Taller en clase: Regresión Múltiple"
+author: "Felipe Clement - Lina Quintero"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load}
+library(AER)
+
+data <- read.csv("data.csv")[,-c(1:2)]
+model_all <- lm(data$shares ~ .,data)
+summary(model_all)$adj.r.squared
+AIC(model_all)
+BIC(model_all)
+```
+
+```{r m1}
+model_1 <- lm(data$shares ~ data$timedelta + data$n_tokens_title + data$n_tokens_content + data$n_unique_tokens + data$n_non_stop_words + data$n_non_stop_unique_tokens + data$num_hrefs + data$num_self_hrefs + data$num_imgs + data$num_videos + data$average_token_length + data$num_keywords, data)
+summary(model_1)$adj.r.squared
+AIC(model_1)
+BIC(model_1)
+```
+
+```{r m2}
+model_2 <- lm(data$shares ~ data$data_channel_is_lifestyle + data$data_channel_is_entertainment + data$data_channel_is_bus + data$data_channel_is_socmed + data$data_channel_is_tech + data$data_channel_is_world + data$kw_min_min + data$kw_max_min + data$kw_avg_min + data$kw_min_max + data$kw_max_max + data$kw_avg_max + data$kw_min_avg + data$kw_max_avg + data$kw_avg_avg + data$self_reference_min_shares + data$self_reference_max_shares, data)
+summary(model_2)$adj.r.squared
+AIC(model_2)
+BIC(model_2)
+```
+
+```{r m1_v_all}
+anova(model_1, model_all)
+anova(model_2, model_all)
+```
+
+Podemos decir que los dos modelos con menos variables son mejores que el que tiene todas, procedemos a analizar cuales de los dos anidados es mejor.
+
+```{r j}
+j_test <- jtest(model_1, model_2)
+j_test
+```
