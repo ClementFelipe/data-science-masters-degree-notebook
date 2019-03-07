@@ -15,26 +15,67 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r load}
 library(AER)
+library(data.table)
+library(dplyr)
+library(formattable)
+library(tidyr)
 
-data <- read.csv("data.csv")[,-c(1:2)]
-model_all <- lm(data$shares ~ .,data)
-summary(model_all)$adj.r.squared
-AIC(model_all)
-BIC(model_all)
+
+data <- read.csv("data.csv")[, -c(1:2)]
 ```
 
-```{r m1}
-model_1 <- lm(data$shares ~ data$timedelta + data$n_tokens_title + data$n_tokens_content + data$n_unique_tokens + data$n_non_stop_words + data$n_non_stop_unique_tokens + data$num_hrefs + data$num_self_hrefs + data$num_imgs + data$num_videos + data$average_token_length + data$num_keywords, data)
-summary(model_1)$adj.r.squared
-AIC(model_1)
-BIC(model_1)
+```{r model_gen}
+generate_model <- function(data_frame, indep_variable, dep_variable_range) {
+  attach(data_frame)
+  column_names <- colnames(data_frame[, dep_variable_range])
+  model_formula <- paste(indep_variable, " ~ ", paste(column_names, collapse = " + "))
+  model <- lm(model_formula, data)
+  detach(data_frame)
+
+  return(model)
+}
 ```
 
-```{r m2}
-model_2 <- lm(data$shares ~ data$data_channel_is_lifestyle + data$data_channel_is_entertainment + data$data_channel_is_bus + data$data_channel_is_socmed + data$data_channel_is_tech + data$data_channel_is_world + data$kw_min_min + data$kw_max_min + data$kw_avg_min + data$kw_min_max + data$kw_max_max + data$kw_avg_max + data$kw_min_avg + data$kw_max_avg + data$kw_avg_avg + data$self_reference_min_shares + data$self_reference_max_shares, data)
-summary(model_2)$adj.r.squared
-AIC(model_2)
-BIC(model_2)
+```{r models}
+model_all <- generate_model(data, "shares", 1:29)
+model_1 <- generate_model(data, "shares", 1:12)
+model_2 <- generate_model(data, "shares", 13:29)
+```
+
+```{r individual}
+r_squared_adj <- c(
+  summary(model_all)$adj.r.squared,
+  summary(model_1)$adj.r.squared,
+  summary(model_2)$adj.r.squared
+)
+
+aic <- c(
+  AIC(model_all),
+  AIC(model_1),
+  AIC(model_2)
+)
+
+bic <- c(
+  BIC(model_all),
+  BIC(model_1),
+  BIC(model_2)
+)
+```
+
+```{r visualize}
+customGreen0 <- "#DeF7E9"
+customGreen <- "#71CA97"
+
+row_names <- c("Model All", "Model 1", "Model 2")
+consolidated <- data.frame(r_squared_adj, aic, bic, row.names = row_names)
+formattable(consolidated,
+  align = c("l", rep("c", 3)),
+  list(
+    r_squared_adj = color_tile(customGreen, customGreen0),
+    aic = color_tile(customGreen, customGreen0),
+    bic = color_tile(customGreen, customGreen0)
+  )
+)
 ```
 
 ```{r m1_v_all}
