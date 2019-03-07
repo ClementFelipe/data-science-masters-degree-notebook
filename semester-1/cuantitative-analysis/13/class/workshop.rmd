@@ -13,7 +13,7 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r load}
+```{r load, include=FALSE}
 library(AER)
 library(data.table)
 library(dplyr)
