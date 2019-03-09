@@ -1,0 +1,82 @@
+---
+title: R Samples
+author: Felipe Clement
+output: html_document
+---
+
+This file contains examples of basic R concepts and their variations.
+
+## Vectors
+
+This section refers to one dimensional vectors of elements (arrays in other languages).
+
+### Declaration
+
+Possible ways include:
+
+```{r vectors_declaration}
+c(1, 2, 3)
+
+1:3
+
+seq(-3, -1, 0.2)
+
+rep(1, 5)
+```
+
+### Access
+
+Vector access receives an _index vector_ to decide the output.
+
+```{r example vector}
+x <- c(0:6, NA)
+x
+```
+
+#### Intger index vector access
+
+The way it works when an _integer vector_ is passed is basically telling R to "give me the elements oredered by the following index list", this index list:
+
+  - Does not have to be shorter than the original list
+  - Can repeat indexes
+
+```{r integer_vector_access}
+# First element - R is 1-idexed (:
+x[1]
+
+# Same element more than once
+x[c(3, 3, 3, 3)]
+
+# Last  3 elements
+x[length(x) - 3:0]
+
+# All elements except the first two
+x[-c(1:2)]
+```
+
+#### Logical index vector access
+
+_logical vectors_ have the following conditions:
+
+  - If longer than the original vector, will produce `NA` for every boolean value in the index vector in a position `y > length(x)`
+  - If shorter than the original vector, will repeat the index vector until exactly all elements of the original have been evaluated
+
+```{r logical_vector_access}
+# Shorter than the original vector
+x[c(TRUE, TRUE)]
+
+# Shorter than the original but with a false
+x[c(TRUE, FALSE)]
+
+# Longer than the original
+x[rep(TRUE, 10)]
+
+# Elements not NA
+x[!is.na(x)]
+
+# Even elements
+x[x %% 2 == 0]
+
+# Even positive non NA elements
+x[!is.na(x) & (x > 0) & (x %% 2 == 0)]
+```
