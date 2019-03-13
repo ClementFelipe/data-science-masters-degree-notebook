@@ -1,0 +1,83 @@
+---
+title: "Dummy variables"
+author: "Felipe Clement"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Dummy Variables
+
+## Visualize
+
+```{r load_data}
+data <- read.csv("data.csv")
+str(data)
+head(data)
+
+plot(data$log_PIB_USA, data$log_PIB_Col)
+```
+
+## Naive model
+
+```{r naive}
+model_naive <- lm(log_PIB_Col ~ log_PIB_USA, data = data)
+summary(model_naive)
+```
+
+## Dummy model
+
+## Introduce dummy variable: year > 1990
+
+```{r dummy_data}
+data_dummy <- data
+
+data_dummy$D <- as.numeric(data_dummy$year > 1990)
+str(data_dummy)
+head(data_dummy)
+tail(data_dummy)
+```
+
+## Dummy model
+
+```{r dummy_model}
+model_dummy <- lm(log_PIB_Col ~ D + log_PIB_USA + D * log_PIB_USA, data = data_dummy)
+summary(model_dummy)
+```
+
+## Compare models
+
+```{r compare}
+anova(model_naive, model_dummy)
+```
+
+## Introduce dummy variable: 1990 < year < 2000
+
+```{r dummy_data_2}
+data_dummy_2 <- data
+
+data_dummy_2$D <- as.numeric(data_dummy_2$year > 1990 & data_dummy_2$year <= 2000)
+str(data_dummy_2)
+head(data_dummy_2)
+tail(data_dummy_2)
+```
+
+## Dummy model 2
+
+```{r dummy_model_2}
+model_dummy_2 <- lm(log_PIB_Col ~ D + log_PIB_USA + D * log_PIB_USA, data = data_dummy_2)
+summary(model_dummy_2)
+```
+
+## Compare models 2
+
+```{r compare_2}
+anova(model_naive, model_dummy_2)
+```
