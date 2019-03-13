@@ -7,6 +7,9 @@ There are two types of statistics: descriptive and statistical inference.
 Is:
 
 - A collection of methods to organize, analyse, present, summarize... data
+  - Show distribution of data
+  - Show central tendency
+  - Point out atypical data
 - ***Not*** meant to make predictions or generate *future* data from existing data
 - Useful for giving meaning to unorganized data, making it useful
 

@@ -1,0 +1,46 @@
+---
+title: "Okun Law in Colombia"
+author: "Felipe Clement"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries, include=FALSE}
+library(tidyverse)
+```
+
+# Okun Law
+
+A model to estimate unemployment rates in colombia by using GDP in Colombia. Data is organized by trimesters.
+
+## Load data
+```{r load_data}
+raw_data <- read.csv("data.csv")
+str(raw_data)
+head(raw_data)
+
+# Cleanup
+data <- raw_data[-1, -1:-3]
+str(data)
+head(data)
+```
+
+## Visualize Data
+```{r visualize_data}
+ggplot(data) + geom_point(mapping = aes(x = PIB_cp, y = TD_cp))
+```
+
+## Linear model
+This result implies that, in Colombia, for every percentage point that PIB increases, unemployment will decrease by 1.812 percent points, apparently meaning Okun's law is met.
+```{r linear_model}
+model <- lm(data = data, formula = TD_cp ~ .)
+summary(model)
+```

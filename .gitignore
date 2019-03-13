@@ -2,3 +2,10 @@
 *.RHistory
 
 *.DS_Store
+*.png
+*.pdf
+*.jpg
+.Rproj.user
+*.html
+*.Rproj
+*.swp

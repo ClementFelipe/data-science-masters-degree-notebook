@@ -1,0 +1,84 @@
+---
+title: "Goodness of fit"
+author: "Felipe Clement"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+library(xts)
+library(AER)
+```
+
+# Goodness of fit
+
+Data for this model is the percentage growth of stock Suramericana with respect to stocks from other companies.
+
+```{r load_data}
+load("RetornosDiarios.RData")
+
+data <- retornos.diarios
+str(data)
+class(data)
+sapply(data, class)
+head(data)
+
+summary(data)
+```
+
+## Visualize Data
+
+```{r visualize_data}
+plot.xts(data)
+```
+
+## Correlations between stocks
+
+```{r correlations}
+cor(data)
+```
+
+## Model
+
+```{r model}
+model <- lm(data = data, formula = GRUPOSURA ~ .)
+summary(model)
+```
+
+## Test model
+
+Since p value is too high, it means we can not reject the null hypothesis of `Ho: CONCONCRET = OCCIDENTE = 0`, therefore, both these variables have no effect in the percent change for GRUPOSURA stock.  
+
+```{r test_model}
+hypothesis_matrix <- matrix(
+  c(
+    "CONCONCRET = 0",
+    "OCCIDENTE = 0"
+  ),
+  nrow = 2, ncol = 1
+)
+
+linearHypothesis(model, hypothesis.matrix = hypothesis_matrix)
+```
+
+### Test similar coefficients
+
+```{r test_similar}
+hypothesis_matrix <- matrix(
+  c(
+    "ECOPETROL = 0.12",
+    "EXITO = 0.12"
+  ),
+  nrow = 2, ncol = 1
+)
+
+linearHypothesis(model, hypothesis.matrix = hypothesis_matrix)
+```

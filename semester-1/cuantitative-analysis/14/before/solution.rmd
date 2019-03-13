@@ -1,0 +1,101 @@
+---
+title: "Model Selection"
+author: "Felipe Clement - Lina Quintero"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries}
+library(formattable)
+library(AER)
+```
+
+# Model Selection
+
+## Load data
+```{r load}
+raw_data <- read.csv("data.csv")
+str(raw_data)
+head(raw_data)
+
+data <- raw_data[, -1]
+str(data)
+head(data)
+```
+
+## Create models
+```{r create_models}
+model_1 <- lm(y ~ x1 + x2 + x3 + x6 + x7, data)
+model_2 <- lm(y ~ x1 + x2 + x3, data)
+model_3 <- lm(y ~ x4 + x5 + x8 + x9 + x10, data)
+
+summary(model_1)
+summary(model_2)
+summary(model_3)
+```
+
+## Visualize Goodness of Fit
+
+AIC and BIC suggest the best model is 2, while adjusted R squared suggests it's 1.
+
+```{r visualize}
+metrics_1 <- c(
+  summary(model_1)$adj.r.squared,
+  AIC(model_1),
+  BIC(model_1)
+)
+
+metrics_2 <- c(
+  summary(model_2)$adj.r.squared,
+  AIC(model_2),
+  BIC(model_2)
+)
+
+metrics_3 <- c(
+  summary(model_3)$adj.r.squared,
+  BIC(model_3),
+  AIC(model_3)
+)
+
+customGreen0 <- "#DeF7E9"
+customGreen <- "#71CA97"
+
+row_names <- c("R Sq Adj", "AIC", "BIC")
+consolidated <- data.frame(metrics_1, metrics_2, metrics_3, row.names = row_names)
+formattable(consolidated,
+  align = c("l", rep("c", 3))
+)
+```
+
+## Compare Model 1 and 2
+
+Since p-value is too high, we cannot reject the `H0: model_2`, therefore, model_1 is better.
+
+```{r compare}
+anova(model_2, model_1)
+```
+
+## Comparing Model 3
+
+Since both p-values in each test mean we reject the respective null hypothesis of one model being better than the other, we can't conclude that either model is better than the other.
+
+```{r compare_3}
+jtest(model_1, model_3)
+jtest(model_2, model_3)
+
+coxtest(model_1, model_3)
+coxtest(model_2, model_3)
+```
+
+## Conclusion
+
+Since model 3 has worse Goodnes of Fit with respect to the others, and we can't prove it's better via J or Cox test, then we discard model 3. Regarding 1 and 2, the F test performed indicates model 
+```{r conclusion}
