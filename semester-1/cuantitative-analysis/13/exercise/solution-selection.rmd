@@ -1,0 +1,102 @@
+---
+title: Chapter 2 Excercise - Selection
+author: Felipe Clement
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r libraries, include=FALSE}
+library(formattable)
+```
+
+# Problem
+
+```
+1. El modelo: It = α1 + α2CEt + α3CDt + α4LDiest + α5LEIt + α6Vt + εt genero ́ mucha discusio ́n en la pequen ̃a Repu ́blica y en diversos foros se sugirieron dife- rentes modelos:
+It = α1 +α2CEt +α3CDt +εt
+It = α1 + α2LDiest + α3LEIt + εt
+It = α1 + α2Vt + εt
+It = α1 + α2CEt + α3LEIt + εt
+It = α1 + α2CDt + α3LDiest + εt
+It = α1 + α2CEt + α3LDiest + α4LEIt + α5Vt + εt It = α1 +α2CEt +α3CDt +α4Vt +εt
+(4.7) (4.8) (4.9)
+(4.10) (4.11) (4.12) (4.13)
+Determine cua ́l es el mejor modelo para explicar los ingresos del sector ferrovia- rio en esta pequen ̃a repu ́blica (muestre todos los ca ́lculos necesarios para tomar esta decisio ́n y asegu ́rese que su respuesta esta ́ bien argumentada).
+2. A partir del modelo que selecciono ́ en la pregunta anterior:
+a) Analice la significancia individual de los coeficientes
+b) Analice la significancia conjunta de los coeficientes
+c) Determine cua ́l es el factor que ma ́s afecta el ingreso del sector ferroviario en
+esta nacio ́n
+72 4 Comparacio ́n de Modelos
+d) De acuerdo con su resultado, ¿que ́ puede sugerir al gobierno de esta nacio ́n para mejorar los ingresos del sector?
+```
+
+# Load Data
+
+```{r load_data}
+data <- read.csv("data.csv")[, -1]
+str(data)
+head(data)
+```
+
+## Models
+
+```{r models}
+model_1 <- lm(I ~ CE + CD, data)
+model_2 <- lm(I ~ Ldies + LEl, data)
+model_3 <- lm(I ~ V, data)
+model_4 <- lm(I ~ CE + LEl, data)
+model_5 <- lm(I ~ CD + Ldies, data)
+model_6 <- lm(I ~ CE + Ldies + LEl + V, data)
+model_7 <- lm(I ~ CE + CD + V, data)
+
+adj_r <- c(
+  summary(model_1)$adj.r.squared,
+  summary(model_2)$adj.r.squared,
+  summary(model_3)$adj.r.squared,
+  summary(model_4)$adj.r.squared,
+  summary(model_5)$adj.r.squared,
+  summary(model_6)$adj.r.squared,
+  summary(model_7)$adj.r.squared
+)
+
+aic <- c(
+  AIC(model_1),
+  AIC(model_2),
+  AIC(model_3),
+  AIC(model_4),
+  AIC(model_5),
+  AIC(model_6),
+  AIC(model_7)
+)
+
+bic <- c(
+  BIC(model_1),
+  BIC(model_2),
+  BIC(model_3),
+  BIC(model_4),
+  BIC(model_5),
+  BIC(model_6),
+  BIC(model_7)
+)
+
+customGreen0 <- "#DeF7E9"
+customGreen <- "#71CA97"
+
+row_names <- paste("Model", 1:7)
+consolidated <- data.frame(adj_r, aic, bic, row.names = row_names)
+formattable(consolidated,
+  align = c("l", rep("c", 3)),
+    list(
+    adj_r = color_tile(customGreen0, customGreen),
+    aic = color_tile(customGreen, customGreen0),
+    bic = color_tile(customGreen, customGreen0)
+  )
+)
+```
+
+Model 6 minimizes AIC and BIC, and maximises the adjusted R squared, therefore, this is the best model.
+
+```{r best}
+summary(model_6)
+```

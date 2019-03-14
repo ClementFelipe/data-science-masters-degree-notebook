@@ -1,0 +1,50 @@
+---
+title: "Taller en clase: Variables Dummy Empleados"
+author: "Lina Marcela Quintero - Felipe Clement"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Lectura de datos
+
+```{r introduce_dummy}
+data <- read.csv("data.csv")[,-1]
+
+data$Sexo <- as.numeric(data$Sexo == "F")
+str(data)
+head(data)
+```
+
+## Modelo considerando el sexo
+
+```{r model_with_sex}
+model_with_sex <- lm(Salario ~ Sexo + Educación + Experiencia + Años.Compañía + Sexo * Educación + Sexo * Experiencia + Sexo * Años.Compañía, data = data)
+summary(model_with_sex)
+```
+
+Hay que notar en este modelo estimado, que ser mujer tiene efecto individual con un grado de confianza del 95% en la variable de Años en la compañia para la asignación salarial. Ahora queremos ver si estos valores son significativos cuando se es hombre.
+
+## Modelo sin considerar el sexo
+
+```{r mode_without}
+model_without <- lm(Salario ~ Educación + Experiencia + Años.Compañía, data = data)
+summary(model_without)
+```
+
+Analizamos que dichos valores cuando se es hombre, no tienen significacia de manera individual. Pasamos entonces a probar si en conjunto son significativos en contraste con el modelo que incluye el sexo.
+
+## Comparación de los modelos
+
+```{r compare}
+anova(model_without, model_with_sex)
+```
+
+Debido a que el p-valor es muy grande (> 5%, para un grado de confianza del 95%), no podemos rechazar la hipótesis nula que el modelo restringido es mejor que el no restringido (es decir, que el sexo no tiene efecto sobre el salario). En otras palabras, la consecuencia practica es que el salario está influenciado por el género.

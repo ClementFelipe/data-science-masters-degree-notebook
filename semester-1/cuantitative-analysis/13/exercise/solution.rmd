@@ -1,0 +1,45 @@
+---
+title: Chapter 2 Excercise
+author: Felipe Clement
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Problem
+
+```{md}
+El gobierno de una pequen ̃a Repu ́blica esta ́ reconsiderando la viabilidad del transporte ferroviario, para lo cual contrata un estudio que determine un modelo que permita comprender de una forma ma ́s precisa el comportamiento de los ingresos del sector (I medidos en millones de do ́lares). Un investigador sugiere el siguiente modelo:
+It = α1 + α2CEt + α3CDt + α4LDiest + α5LEIt + α6Vt + εt (2.26)
+Donde,CEt,CDt,LDiest,LEIt yVt representanelconsumodeelectricidadmedi- do en millones de Kilovatios/hora, el consumo de diesel medido en millones de galo- nes, el nu ́mero de locomotoras diesel en el pa ́ıs, el nu ́mero de locomotoras ele ́ctricas y el nu ́mero de viajeros (medido en miles de pasajeros) en el an ̃o t, respectivamente.
+Para efectuar este estudio se cuenta con informacio ́n para el per ́ıodo 1994-2018 (los datos se encuentran en el archivo regmult.xls).
+1. De acuerdo con el enunciado anterior, estime el modelo 2.26 y reporte sus resul- tados en una tabla
+2. Interprete los coeficientes estimados
+```
+
+# Load Data
+
+```{r load_data}
+data <- read.csv("data.csv")
+str(data)
+head(data)
+names(data)
+```
+
+# Model Data
+
+The year column is removed from the data frame, as this information is not relevant to the model, it's just the name of our observations.
+
+```{r model_data}
+model_data <- data[, -1]
+str(model_data)
+head(model_data)
+
+pairs(model_data)
+```
+
+# Model
+
+```{r model}
+model <- lm(I ~ ., model_data)
+summary(model)
+```
