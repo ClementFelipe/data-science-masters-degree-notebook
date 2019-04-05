@@ -1,0 +1,60 @@
+---
+title: Multicollinearity
+author: Felipe Clement
+---
+
+```{r libs}
+library(car)
+```
+
+## Load data
+
+```{r load}
+data <- read.csv("data.csv")
+str(data)
+head(data)
+```
+
+### Create squared experience
+
+```{r squared}
+data$exp2 <- data$exp * data$exp
+str(data)
+head(data)
+```
+
+## Model
+
+```{r model}
+model <- lm(Lnih ~ yedu + exp + exp2 + sexo + sexo * yedu + sexo * exp + sexo * exp2, data)
+summary(model)
+```
+
+## Coeffiecient VIFs
+
+Tere is a collinearity problem with `exp, exp2, sex` and the latters combination with the others.
+
+```{r vif}
+vif(model)
+```
+
+## Kappa test
+
+The result value is larger than 20, which indicates high collinearity.
+
+```{r kappa}
+X <- model.matrix(model)
+XTX <- t(X) %*% X
+
+eigenvalues <- eigen(XTX)$val
+
+min_eigenvalue <- min(eigenvalues)
+max_eigenvalue <- max(eigenvalues)
+
+kappa <- sqrt(max_eigenvalue / min_eigenvalue)
+kappa
+```
+
+## Conclusion
+
+Since there is high collinearity, it could (in part) be due to `exp` and `exp2`, which, even if not directly linearly related, the range of observations could be small enough so that the cuadratic relation may be linearly approximated. We can't remove any of these variables, as there is a theoretical model behind them.

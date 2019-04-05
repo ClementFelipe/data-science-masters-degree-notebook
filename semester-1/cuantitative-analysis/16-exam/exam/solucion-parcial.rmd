@@ -1,0 +1,188 @@
+---
+title: Solución Pacrial 1
+author: Felipe Clement
+date: "`r Sys.Date()`"
+---
+
+```{r libs, include=FALSE}
+library(AER)
+```
+
+## Carga de Datos
+```{r carga_datos}
+data <- read.csv("data.csv", sep = " ")
+str(data)
+head(data)
+```
+
+## Pregunta 6
+
+Empleando la información disponible en el archivo DATOSParcial_1.txt y R responda la siguiente pregunta (suponga que todos los supuestos del teorema de Gauss-Markov se cumplen):
+
+Si se estima un modelo de regresión múltiple de y en función de x1, x2, x3, x4 y x5 (llamemos a este el modelo1), se puede concluir sobre el intercepto que:
+
+  a. No es significativo, pero positivo
+  b. No es significativo, pero negativo
+  c. Es significativo, y positivo
+  d. Es significativo, y negativo
+  e. Ninguna de las anteriores
+  
+```{r pregunta_6}
+modelo_1 <- lm(y ~ x1 + x2 + x3 + x4 + x5, data)
+summary(modelo_1)
+```
+
+(c) El intercepto es significativo individualmente para el modelo 1, debido a que con su p-valor asociado (con un nivel de significancia de casi 0%) rechazamos la hipotesis nula `H0: (Intercepto) = 0`, por lo tanto la consecuencia es que tiene efecto sobre la variable dependiente, además es positivo con un valor de `11.0258`.
+
+## Pregunta 7
+
+Empleando la información disponible en el archivo DATOSParcial_1.txt y R responda la siguiente pregunta (suponga que todos los supuestos del teorema de Gauss-Markov se cumplen):
+
+Si se estima un segundo modelo (llamemos a este el modelo2) en el que y es explicado por x1, x3,  y x5, con un 99% de confianza, ¿cuál de los dos modelos es mejor?
+
+  a. El modelo 1 es mejor que el modelo 2
+  b. El modelo 2 es mejor que el modelo 1
+  c. No se puede concluir cuál modelo es mejor
+  d. Ninguna de las anteriores
+
+```{r pregunta_7}
+modelo_2 <- lm(y ~ x1 + x3 + x5, data)
+summary(modelo_2)
+```
+
+Debido a que los modelos son anidados, procedemos a compararlos por medio de una prueba F, donde la hipotesis nula implica el primer modelo (restringido).
+
+```{r modelo_1_vs_2}
+anova(modelo_2, modelo_1)
+AIC(modelo_1) # Make this prettier and interpret
+AIC(modelo_2)
+BIC(modelo_1)
+BIC(modelo_2)
+```
+
+(1) Debido a que el p-valor de la prueba es menor a (0.1%) podemos rechazar la hipotesis nula de que el modelo 2 (restringido) es el mejor, por lo tando, el modelo 1 es mejor modelo para explicar la variable.
+
+## Pregunta 8
+
+Empleando la información disponible en el archivo DATOSParcial_1.txt y R responda la siguiente pregunta (suponga que todos los supuestos del teorema de Gauss-Markov se cumplen):
+
+Independientemente de su respuesta en la pregunta anterior y empleando el modelo2, ¿qué se puede concluir sobre el efecto de la variable x3 sobre y?
+
+  a. Un aumento de un 1% en x3 aumenta a y en 1.5916%
+  b. Un aumento de una unidad en x3 aumenta a y en 1.5916%
+  c. Un aumento de una unidad en x3 aumenta a y en 1.5916 unidades
+  d. Un aumento de una unidad en y aumenta a X3 en 1.5916 unidades
+  e. Un aumento de un 1% en y aumenta a X3 en 1.5916%
+
+(c)
+
+## Pregunta 9
+
+Empleando la información disponible en el archivo DATOSParcial_1.txt y R responda la siguiente pregunta (suponga que todos los supuestos del teorema de Gauss-Markov se cumplen):
+
+Independientemente de su respuesta en las preguntas anteriores y empleando el modelo1, El R-cuadrado del modelo implica que ...
+
+  a. 69.56% de la variación de y es explicada por el modelo
+  b. 70.58% de la variación de y es explicada por el modelo
+  c. 69.56% de la media de y es explicada por el modelo
+  d. 70.58% de la media de y es explicada por el modelo
+  e. Ninguna de las anteriores
+  
+(b)
+
+## Pregunta 10
+
+Empleando la información disponible en el archivo DATOSParcial_1.txt y R responda la siguiente pregunta (suponga que todos los supuestos del teorema de Gauss-Markov se cumplen):
+
+5. Ahora estime un tercer modelo (modelo3) en el que Y es explicado por x3, x5, x10 y x15. En este nuevo modelo se puede concluir que:
+
+  a. no se puede concluir nada sobre el efecto de x15 sobre y
+  b. x15 no es significativa pero tiene un efecto negativo sobre y
+  c. x15 no es significativa pero tiene un efecto positivo sobre y
+  d. x15 no afecta a y
+  e. Ninguna de las anteriores
+  
+```{r pregunta_10}
+modelo_3 <- lm(y ~ x3 + x5 + x10 + x15, data)
+summary(modelo_3)
+```
+
+Debido a que el p-valor de la prueba de significancia individual sobre x15 es muy grande, no se puede rechazar la hipotesis nula `H0: beta(x15) = 0`, por lo tanto esta variable no afecta a `y` individualmente.
+
+## Pregunta 11
+
+Con un 99% de confianza y todas las pruebas estudiadas, ¿cuál modelo es mejor, el model2 o el model3?
+
+  a. El modelo 3 es mejor que el modelo 2
+  b. El modelo 2 es mejor que el modelo 3
+  c. No se puede concluir cuál modelo es mejor
+  d. Ninguna de las anteriores
+  
+Debido a que los modelos son no anidados, procedemos a compararlos usando las pruebas J y Cox.
+
+```{r model_2_vs_3_j}
+jtest(modelo_2, modelo_3)
+```
+
+Debido a que el p-valor para la prueba para la `H0: modelo 2` es menor a 0.1% podemos rechazar la hipotesis nula de que el modelo 2 es mejor que el 3, no podemos concluir a favor del modelo 2.
+
+Debido a que el p-valor para la prueba para la `H0: modelo 3` es menor a 0.1% podemos rechazar la hipotesis nula de que el modelo 3 es mejor que el 2, no podemos concluir a favor del modelo 2.
+
+Hacemos una prueba Cox.
+
+```{r model_2_vs_3_cox}
+coxtest(modelo_2, modelo_3)
+```
+
+Este resultado tiene interpretacion similar a la prueba J, no podemos concluir a favor de uno de los dos modelos. Comparemos R2 ajustado, AIC y BIC.
+
+```{r model_2_vs_3_gof}
+summary(modelo_2)$adj.r.squared
+summary(modelo_3)$adj.r.squared
+AIC(modelo_2)
+AIC(modelo_3)
+BIC(modelo_2)
+BIC(modelo_3)
+```
+
+(b) Debido a que el modelo 2 maximisa el R2 ajustado y minimiza AIC y BIC, podemos concluir que el modelo 2 es mejor.
+
+## Pregunta 12
+
+Cree una variable dummy que tome el valor de uno sí la variable x2 es mayor que 5 y cero en caso contrario. Llame a esta variable dummy D. Ahora construya un modelo en el que y depende únicamente de x1, pero se permite un cambio en el intercepto y la pendiente cuando X2 es mayor que 5. (Llame a este modelo modelo4)
+
+Con dicho modelo (modelo4) se puede concluir que:
+
+  a. El 49% de la variación de y se puede explicar con este modelo.
+  b. Con un 99% de confianza se puede rechazar la hipótesis nula de que todas las variables son cero.
+  c. Con un 95% de confianza se puede rechazar la hipótesis nula de que todas las variables son cero.
+  d. Todas las anteriores
+  e. Ninguna de las anteriores
+
+```{r pregunta_12}
+data_dummy <- data
+data_dummy$D <- as.numeric(data_dummy$x2 > 5)
+head(data_dummy)
+
+modelo_4 <- lm(y ~ D + x1 + x1 * D, data_dummy)
+summary(modelo_4)
+```
+
+## Pregunta 14
+
+Del modelo 4 (modelo4) se puede afirmar que:
+
+  a. Tanto el cambio en la pendiente como el cambio en el intercepto son conjuntamente iguales a cero.
+  b. No existe cambio en el intercepto o en la pendiente
+  c. Con un 99% de confianza, al menos existe un cambio, ya sea el pendiente o el intercepto.
+  d. Una prueba de restricción lineal de parámetros NO permite determinar si existe cambio en el intercepto y en la pendiente
+  e. Ninguna de las anteriores
+  
+```{r modelo_4}
+model_4_r <- lm(y ~ x1, data_dummy)
+summary(model_4_r)
+
+anova(model_4_r, modelo_4)
+```
+
+Como el p-valor de esta prueba es muy pequeño, rechazo la `H0: modelo restringido`, por lo tanto el mejor modelo es el que incluye la dummy (es decir, si hay cambio en pendiente e intercepto).

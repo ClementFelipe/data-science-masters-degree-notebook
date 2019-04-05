@@ -1,0 +1,73 @@
+---
+title: Seleccion Automatica
+author: Lina Quintero, Felipe Clement
+output: html_document
+---
+
+```{r libs, include=FALSE}
+library(RcmdrMisc)
+library(AER)
+```
+
+# Carga de datos
+
+```{r carga}
+data <- read.csv("data.csv")[, -1]
+str(data)
+```
+
+# Modelo
+
+```{r model}
+model <- lm(shares ~ ., data)
+summary(model)
+```
+
+# Seleccion automatica
+
+
+## Modelo seleccionado por forward-BIC
+
+Usamos las siguientes lineas para generar los modelos usando el criterio BIC de manera forward y backward.
+
+### Modelo forward
+
+```{r fwd}
+model_forward <- stepwise(model, direction = "forward", criterion = "BIC")
+```
+
+### Modelo backward
+
+```{r back}
+model_backward <- stepwise(model, direction = "backward", criterion = "BIC")
+```
+
+## Modelo seleccionado por backward-BIC
+
+Los siguientes modelos no se encuentran anidados, por lo tanto se procedera a esciger el mejor modelo por medio de las pruebas J y Cox.
+
+```{r backward}
+summary(model_forward)
+summary(model_backward)
+```
+
+## Comparación de ambos modelos
+
+La prueba J (usando un grado de confianza del 99.9%), para la `H0: model_foward` tiene un p-valor pequeño, con el cual rechazamos la `H0`, lo cual significa que no podemos concluir a favor de `model_forward`. De manera analoga, para la `H0: model_backward`, sucede lo mismo, por lo tanto esta prueba no es concluyente. Aplicaremos la prueba Cox.
+
+```{r comp_j}
+jtest(model_forward, model_backward)
+```
+
+Para la prueba Cox, obtenemos resultados similares a la prueba J, no podemos concluir cual modelo es mejor.
+
+```{r comp_cox}
+coxtest(model_forward, model_backward)
+```
+
+Compararemos por medio del r cuadrado (ya que ambos modelos tienen el mismo numero de variables). Debido a que `model_backward` tiene un r cuadrado levemente mas alto, escogemos este como el mejor modelo.
+
+```{r r2}
+summary(model_forward)$r.squared
+summary(model_backward)$r.squared
+```

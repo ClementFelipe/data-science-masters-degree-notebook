@@ -1,0 +1,167 @@
+---
+title: Autocorrelation
+author: Felipe Clement
+---
+
+```{r libs}
+library(xts)
+library(readxl)
+library(tseries)
+library(AER)
+library(lmtest)
+library(sandwich)
+```
+
+## Data
+
+```{r data}
+load("data.RData")
+
+data_stocks <- retornos.diarios
+
+str(data_stocks)
+head(data_stocks)
+
+data_dtf <- read_xlsx("data.xlsx")
+
+str(data_dtf)
+head(data_dtf)
+```
+
+### Join Data
+
+Clean up DTF file data.
+
+```{r clean}
+colnames(data_dtf)[1] <- "fecha"
+
+data_dtf$fecha <- as.Date(data_dtf$fecha)
+
+data_dtf <- xts(data_dtf$DTF90dias, order.by = data_dtf$fecha)
+
+str(data_dtf)
+head(data_dtf)
+```
+
+Check periodicities match.
+
+```{r match}
+periodicity(data_stocks)
+periodicity(data_dtf)
+```
+
+Join.
+
+```{r join}
+data <- merge(data_stocks, data_dtf, join = "left")
+
+colnames(data) <- tolower(colnames(data))
+colnames(data)[which(colnames(data) == "data_dtf")] <- "dtf"
+
+str(data)
+head(data)
+```
+
+## Model
+
+```{r model}
+model <- lm(gruposura ~ ., data)
+summary(model)
+```
+
+## Residuals
+
+First plot shows errors tend to switch sign "often", could be a sign of autocorrelation. Second plot shows there is not a strong correlation between the errors and their respective lagged errors.
+
+```{r resid}
+errors <- residuals(model)
+
+par(mfrow = c(2, 1))
+
+ts.plot(errors,
+  main = "Estimated errors",
+  xlab = "Days",
+  ylab = "Errors"
+)
+
+lagged_errors <- lag.xts(errors)
+
+plot(errors,
+  lagged_errors,
+  xlab = "errors in t",
+  ylab = "errors in t-1",
+  xlim = c(-6, 6),
+  ylim = c(-6, 6)
+)
+
+lag_regression <- lm(errors ~ lagged_errors)
+
+abline(lag_regression, col = "blue")
+```
+
+## Tests
+
+All tests have `H0: no autocorrelation (random errors)`.
+
+### Runs test
+
+By the 3rd run of the test, we can reject the null hypothesis os no autocorrelation with 99.9% confidence and conclude that there is negative autocorrelation.
+
+```{r tests}
+error_signs <- factor(errors > 0)
+head(error_signs)
+
+runs.test(error_signs)
+runs.test(error_signs, alternative = "less")
+runs.test(error_signs, alternative = "greater")
+```
+
+### Durbin-Watson
+
+Similar results to Runs test.
+
+```{r dw}
+dwtest(model, alternative = "two.sided")
+dwtest(model, alternative = "greater")
+dwtest(model, alternative = "less")
+```
+
+### Box-Pierce
+
+```{r bp}
+Box.test(errors)
+```
+
+### Breusch-Godfrey
+
+```{r bg}
+bgtest(model, order = 1)
+```
+
+## Solution
+
+### New variance and covariance matrices
+
+```{r newey_west}
+covariances_newey <- NeweyWest(model)
+covariances_andrews <- kernHAC(model)
+covariances_lumley <- weave(model)
+```
+
+### New **t** values
+
+All tests conclude that `conconcret`, `occidente` and `dtf` variables are individually insignificant.
+
+```{r test}
+coeftest(model, vcov. = covariances_newey)
+coeftest(model, vcov. = covariances_andrews)
+coeftest(model, vcov. = covariances_lumley)
+```
+
+### Test multiple coefficients
+
+```{r test_coefficients}
+model_restricted <- lm(gruposura ~ ecopetrol + nutresa + exito + isa + grupoaval + valorem, data)
+
+waldtest(model_restricted, model, vcov = covariances_newey)
+```

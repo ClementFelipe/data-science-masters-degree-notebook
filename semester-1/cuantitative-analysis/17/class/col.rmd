@@ -1,0 +1,66 @@
+---
+title: Seleccion Automatica
+author: Lina Quintero, Felipe Clement
+output: html_document
+---
+
+```{r libs, include=FALSE}
+library(car)
+```
+
+# Carga de datos
+
+```{r carga}
+data <- read.csv("data.csv")[, -1]
+str(data)
+```
+
+# Modelo
+
+```{r model}
+model <- lm(shares ~ num_hrefs + average_token_length + data_channel_is_entertainment + kw_min_min + kw_min_avg + kw_max_avg + kw_avg_avg + self_reference_min_shares + max_negative_polarity, data)
+summary(model)
+```
+
+## Pruebas de multicolinealidad
+
+```{r p}
+vif(model)
+```
+Los resultados implican la existencia de un problema de multicolinealidad. En este caso, el VIF para las variables kw_avg_avg y kw_max_avg es grande (mayor a 4)
+
+## Kappa
+
+```{r k}
+XTX <- model.matrix(model)
+e <- eigen(t(XTX) %*% XTX)
+e$val
+
+lambda.1 <- max(e$val)
+lambda.k <- min(e$val)
+kappa <- sqrt(lambda.1 / lambda.k)
+kappa
+```
+El estadistico kappa es muy grande, de manera que esta prueba coincide con la anterior sobre el problema existente de multicolinealidad.
+
+Las variables que denotan el sintoma de multicolinealidad son: 
+-kw_avg_avg: Avg. keyword (max.shares)
+-kw_max_avg: Avg. keyword (avg. shares)
+Sin embargo no estamos frente a un caso de multicolinealidad perfecta, así que procedemos a solucionarlo:
+
+```{r model2}
+model2 <- lm(shares ~ num_hrefs + average_token_length + data_channel_is_entertainment + kw_min_min + kw_min_avg + kw_max_avg +  self_reference_min_shares + max_negative_polarity, data)
+summary(model2)
+vif(model2)
+XTX2 <- model.matrix(model2)
+e2 <- eigen(t(XTX2) %*% XTX2)
+e2$val
+
+lambda.1.2 <- max(e2$val)
+lambda.k.2 <- min(e2$val)
+kappa2 <- sqrt(lambda.1.2 / lambda.k.2)
+kappa2
+```
+
+de manera que no se podría solucinar la multicolinealidad.
+

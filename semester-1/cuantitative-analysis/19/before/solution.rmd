@@ -1,0 +1,59 @@
+---
+title: Heteroscedasticity
+author: Felipe Clement
+---
+
+```{r libs, include=FALSE}
+library(lmtest)
+```
+
+## Data
+
+```{r data}
+data <- read.csv("data.csv")
+str(data)
+head(data)
+
+data$exp2 <- data$exp * data$exp
+str(data)
+head(data)
+```
+
+## Model
+
+```{r model}
+model <- lm(Lnih ~ yedu + exp + exp2 + sexo + sexo * yedu + sexo * exp + sexo * exp2, data)
+summary(model)
+```
+
+## Errors
+
+```{r errors}
+errors <- resid(model)
+str(errors)
+```
+
+### Visualize
+
+For `exp2` it is visuble that variance of the error decreases when `exp2` increases, this is a sign of heteroscedasticity.
+
+```{r visualize_errors}
+attach(data)
+par(mfrow = c(2, 2))
+
+plot(yedu, errors)
+plot(exp, errors)
+plot(exp2, errors)
+plot(sexo, errors)
+
+detach(data)
+```
+
+### Breusch-Pagan test
+
+Since p-value is low, we can reject the `H0: homoscedasticity`, so there is heteroscedasticity cause by all variables. For `exp`, sinbce p-value is high, we can't reject the null hypothesis, therefore the variable does not uniquely cause heteroscedasticity.
+
+```{r bp}
+bptest(model, studentize = FALSE)
+bptest(model, ~ data$exp,studentize = FALSE)
+```
