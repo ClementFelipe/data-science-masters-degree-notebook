@@ -1,0 +1,521 @@
+---
+title: Hubway
+author: Felipe Clement Santacruz
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    theme: yeti
+---
+
+```{r libs, include=FALSE}
+library(tidyverse)
+library(lubridate)
+library(mapproj)
+library(sp)
+gctorture(FALSE)
+```
+
+*Nota*: El chunk 2.3 se demora un poco en ejecutarse al comienzo, pero tiene la opcion de cache habilitada, entonces en las proximas cargas no demorara mucho.
+
+# Carga de Datasets {.tabset .tabset-pills}
+
+Se realiza la carga de los datasets:
+
+* `trips`: Archivo CSV con viajes de Hubway
+* `stations`: Archivo CSV con estaciones de Hubway
+
+## Viajes
+
+```{r load_trips, cache=TRUE}
+trips_raw <- read.csv("trips.csv")
+str(trips_raw)
+```
+
+## Stations
+
+```{r load_stations}
+stations_raw <- read.csv("stations.csv")
+str(stations_raw)
+```
+
+## Crimes
+
+```{r load_crimes}
+crimes_raw <- read.csv("crimes.csv", sep = ";")
+str(crimes_raw)
+```
+
+# Limpieza {.tabset .tabset-pills}
+
+Se procede a limpiar cada dataset.
+
+## Viajes
+
+### Utilidad de las columnas
+
+Se realiza un resumen basico de las variables.
+
+```{r summary_trips}
+summary(trips_raw)
+```
+
+Se encuentra lo siguiente con respecto a la utilidad de las columnas:
+
+| Variable                         | Condicion                                                                                  | Accion              |
+|----------------------------------|--------------------------------------------------------------------------------------------|---------------------|
+| `seq_id`, `hubway_id`, `bike_nr` | Son un id's de base de datos, no tienen significado y no sirven para unir con otro dataset | Remover del dataset |
+| `status`                         | Es un factor con un solo nivel, no tiene utilidad                                          | Remover del dataset |
+|                                  |                                                                                            |                     |
+
+```{r remove_trips}
+columns_to_remove <- c("seq_id", "hubway_id", "bike_nr", "status")
+
+trips_tidy <- trips_raw[, -which(colnames(trips_raw) %in% columns_to_remove)]
+str(trips_tidy)
+```
+
+Adicionalmente, puesto a que se busca analizar las edades de los usuarios, la columna `birht_date` sera convertida en `age`.
+
+```{r age}
+trips_tidy <- trips_tidy %>% rename(age = birth_date)
+
+# 2014 is the year in which the data was generated
+trips_tidy$age <- 2014 - trips_tidy$age
+```
+
+### Tipos de columnas
+
+Las columnas `start_date` y `end_date` deben ser convertidas a un formato de tiempo.
+
+```{r trips_types}
+trips_tidy$start_date <- as.POSIXct(trips_tidy$start_date, tz = "EST", format = "%m/%d/%Y %H:%M:%S")
+trips_tidy$end_date <- as.POSIXct(trips_tidy$end_date, tz = "EST", format = "%m/%d/%Y %H:%M:%S")
+
+# Verificamos que todas las fechas hayan sido transformadas exitosamente
+which(is.na(trips_tidy$start_date))
+which(is.na(trips_tidy$end_date))
+
+str(trips_tidy)
+```
+
+### Limpieza de columnas {.tabset .tabset-pills}
+
+#### Duration
+
+```{r trip_duration}
+summary(trips_tidy$duration)
+```
+
+Esta columna parece tener duraciones negativas y muy altas, observaremos la distribución.
+
+```{r trip_duration_viz}
+ggplot(trips_tidy, aes(duration)) + geom_area(stat = "bin")
+
+range_duration <- range(trips_tidy$duration)
+range_duration
+
+day_seconds <- 60 * 60 * 24
+
+abs(range_duration[1] - range_duration[2]) / day_seconds
+```
+
+La distribucion de los datos esta sesgada hacia la izquierda, tiene valores negativos y un rango de 138 dias; revisamos la columna por outliers.
+
+```{r trip_duration_outliers}
+boxplot_duration <- boxplot(trips_tidy$duration)
+
+duration_outliers <- boxplot_duration$out
+number_of_outliers <- length(which(trips_tidy$duration %in% duration_outliers))
+
+(number_of_outliers * 100) / length(trips_tidy$duration)
+```
+
+Visualizando la data sin los outliers (los picos en la distribución representan duraciones multiplo de 60, que significa los minutos que contabiliza la aplicacion):
+
+```{r trip_duration_outliers2}
+trips_duration_no_outliers <- trips_tidy[-which(trips_tidy$duration %in% duration_outliers), ]
+
+ggplot(trips_duration_no_outliers, aes(duration)) + geom_bar()
+```
+
+Se remueven los registros con valores de `duration` negativos; los outliers positivos no se remueven, pues bajo la suscripcion anual, parece que un usuario puede rentar una bicicleta por 365 maximo.
+
+```{r trip_duration_outliers_3}
+trips <- trips_tidy[-which(trips_tidy$duration < 0), ]
+str(trips)
+```
+
+#### Estacion de inicio
+
+Esta columna no requiere limpieza.
+
+```{r trips_strt_statn}
+summary(trips$strt_statn)
+```
+
+#### Estacion final
+
+Esta columna no requiere limpieza.
+
+```{r trips_end_statn}
+summary(trips$end_statn)
+```
+
+#### Tipo de usuario
+
+Esta columna no requiere limpieza.
+
+```{r trips_subsc_type}
+summary(trips$subsc_type)
+```
+
+#### Codigo postal
+
+Esta columna no requiere limpieza.
+
+```{r trips_zip_code}
+summary(trips$zip_code)
+```
+
+#### Dia de inicio de renta
+
+Podemos observar que esta columna no parecen presentar valores fuera de rango.
+
+```{r trips_start_date}
+ggplot(trips, aes(start_date, ..count..)) + geom_histogram()
+```
+
+#### Dia de fin de renta
+
+Podemos observar que esta columna no parecen presentar valores fuera de rango.
+
+```{r trips_end_date}
+ggplot(trips, aes(end_date, ..count..)) + geom_histogram()
+```
+
+#### Edad
+
+Esta columna no requiere limpieza.
+
+```{r trips_age}
+summary(trips$age)
+```
+
+#### Genero
+
+Esta columna no requiere limpieza.
+
+```{r trips_gender}
+summary(trips$gender)
+```
+
+## Estaciones
+
+### Utilidad de las columnas
+
+Se realiza un resumen basico de las variables.
+
+```{r stations_summary}
+summary(stations_raw)
+```
+
+Las columna `terminal` es un identificador que no tiene significado y tampoco sirve para hacer un join con otros datos, se removera.
+
+```{r stations_columns}
+stations_columns_to_remove <- c("terminal")
+
+stations <- stations_raw[, -which(colnames(stations_raw) %in% stations_columns_to_remove)]
+str(stations)
+```
+
+# Preguntas de complejidad 1 {.tabset .tabset-pills}
+
+¿Quién ha utilizado más el servicio de bicicletas?
+
+Para responder las siguientes preguntas se prepara un dataset con el join de los viajes y estaciones.
+
+```{r trips_stations}
+start_stations <- stations %>% setNames(paste0("start_station_", names(.)))
+end_stations <- stations %>% setNames(paste0("end_station_", names(.)))
+
+trips_stations <- trips %>%
+  filter(!is.na(strt_statn) & !is.na(end_statn)) %>%
+  left_join(start_stations, by = c("strt_statn" = "start_station_id"), copy = TRUE) %>%
+  left_join(end_stations, by = c("end_statn" = "end_station_id"), copy = TRUE) %>%
+  select(-c(strt_statn, end_statn))
+
+str(trips_stations)
+```
+
+## ¿Mujeres o hombres?
+
+Los hombres utilizan mas el servicio. Aun considerando que el 29.92% de los generos son missing values (`""`), asumiendo que todos estos fuesen mujeres, igualmente no sobrepasaria la cantidad de hombres.
+
+```{r 1.1}
+trips_na_gender <- trips[which(trips$gender == ""), ]
+trips_female <- trips[which(trips$gender == "Female"), ]
+trips_male <- trips[which(trips$gender == "Male"), ]
+
+nrow(trips_male) > nrow(trips_female) + nrow(trips_na_gender)
+
+ggplot(trips, aes(gender, ..count..)) + geom_bar()
+```
+
+## ¿Personas mayores o jóvenes?
+
+El 77.79% de los datos de edad son missing value, por lo tanto no es posible extraer una conclusion final sobre quien usa mas la plataforma.
+
+```{r 1.2}
+trips_na_age <- trips[which(is.na(trips$age)), ]
+
+(nrow(trips_na_age) * 100) / nrow(trips)
+```
+
+Sin embargo, considerando los valores no `NA` podemos observar que la mediana de las edades es 35 años, lo cual indica que el 50% de los usuarios con edad reportada son relativamente jovenes, centrandose alrededor de los 31 años (moda) 
+
+```{r 1.2a}
+median(trips$age, na.rm = TRUE)
+
+get_mode <- function(var) {
+  uniqv <- unique(var)
+  uniqv[which.max(tabulate(match(var, uniqv)))]
+}
+
+get_mode(trips$age[-which(is.na(trips$age))])
+
+ggplot(trips, aes(age, ..count..)) + geom_bar()
+```
+
+## ¿Suscritos o solo usuarios que han utilizado el servicio una sola vez?
+
+El tipo de usuario mas frecuente es el registrado.
+
+```{r 1.3}
+ggplot(trips, aes(subsc_type, ..count..)) + geom_bar()
+```
+
+## ¿Más en Boston que en Cambridge?
+
+Se han solicitado mas viajes en Boston.
+
+```{r 1.4}
+ggplot(trips_stations, aes(start_station_municipal, ..count..)) + geom_bar()
+```
+
+## ¿Cuáles son las tres estaciones donde han llegado más viajes en estas bicicletas?
+
+```{r 1.5}
+top_end_stations <- trips_stations %>%
+  group_by(end_station_station) %>%
+  summarise(number_of_trips = n()) %>%
+  arrange(desc(number_of_trips)) %>%
+  top_n(3)
+
+top_end_stations
+```
+
+## ¿Cuáles son las cinco estaciones desde donde han salido la mayor cantidad de viajes en estas bicicletas?
+
+```{r 1.6}
+top_start_stations <- trips_stations %>%
+  group_by(start_station_station) %>%
+  summarise(number_of_trips = n()) %>%
+  arrange(desc(number_of_trips)) %>%
+  top_n(5)
+
+top_start_stations
+```
+
+## ¿Cuáles son los cinco recorridos que tuvieron la mayor duración (de mayor a menor)?
+
+Se seleccionan con la duracion en dias.
+
+```{r 1.7}
+top_durations <- trips_stations %>%
+  select(start_station_station, end_station_station, duration) %>%
+  mutate(duration = duration / day_seconds) %>%
+  arrange(desc(duration)) %>%
+  top_n(5)
+
+top_durations
+```
+
+## ¿Cuáles son los cinco recorridos que tuvieron la menor duración (de menor a mayor)?
+
+Existen recorridos con duraciones en 0 segundos, donde la estacion de inicio y fin son iguales. Esto puede indicar que se trataba de alguna prueba o mal funcionamiento de la plataforma.
+
+```{r 1.8}
+bottom_durations <- trips_stations %>%
+  select(start_station_station, end_station_station, duration) %>%
+  arrange(duration)
+
+head(bottom_durations)
+```
+
+Sin considerar los viajes en 0 segundos:
+
+```{r 1.8a}
+bottom_durations <- trips_stations %>%
+  select(start_station_station, end_station_station, duration) %>%
+  filter(duration > 0) %>%
+  arrange(duration)
+
+head(bottom_durations)
+```
+
+# Preguntas de complejidad 2 {.tabset .tabset-pills}
+
+## ¿Más durante el fin de semana que durante los días de semana?
+
+Se realizan mas viajes entre semana.
+
+```{r 2.1}
+get_weekend <- function(date_posixct) {
+  wd <- wday(date_posixct)
+
+  is_weekend <- wd %in% c(1, 7)
+
+  label <- ifelse(is_weekend, "Weekend", "Weekday")
+
+  return(as.factor(label))
+}
+
+trips_by_weekend <- trips %>%
+  mutate(is_weekend = get_weekend(start_date)) %>%
+  select(is_weekend) %>%
+  group_by(is_weekend) %>%
+  summarise(number_of_trips = n())
+
+trips_by_weekend
+```
+
+## ¿Más durante las horas pico?
+
+Se solicitan mas viajes durante horas pico.
+
+```{r 2.2}
+get_rush <- function(date_posixct) {
+  h <- hour(date_posixct)
+
+  is_rush <- h %in% c(6:9, 16:19)
+
+  label <- ifelse(is_rush, "Rush hour", "Not rush hour")
+
+  return(as.factor(label))
+}
+
+trips_by_rush <- trips %>%
+  mutate(is_rush = get_rush(start_date))
+
+ggplot(trips_by_rush, aes(is_rush, ..count..)) + geom_bar()
+```
+
+## ¿Más durante la temporada de verano que la de otoño?
+
+Se utiliza mas durante otoño.
+
+```{r 2.3, cache=TRUE}
+# based on northern meteorooigical seasons
+get_season <- function(dt) {
+  m <- month(dt)
+
+  label <- NA
+
+  if (m %in% c(3:5)) {
+    label <- "spring"
+  } else if (m %in% c(6:8)) {
+    label <- "summer"
+  } else if (m %in% c(9:11)) {
+    label <- "fall"
+  } else {
+    label <- "winter"
+  }
+
+  return(label)
+}
+
+trips_by_season <- trips
+trips_by_season$season <- as.factor(sapply(trips_by_season$start_date, get_season))
+
+ggplot(trips_by_season, aes(season, ..count..)) + geom_bar()
+```
+
+## ¿Cuáles son las horas de mayor demanda de bicicletas?
+
+Las horas de mayor demanda son a las 8:00 AM y 5:00 PM.
+
+```{r 2.4}
+trips_by_hour <- trips %>%
+  select(start_date) %>%
+  mutate(hour = hour(start_date))
+
+ggplot(trips_by_hour, aes(hour, ..count..)) + geom_bar()
+```
+
+# Preguntas de complejidad 3 {.tabset .tabset-pills}
+
+## ¿Cuales son los crímenes más reportados?
+
+Los crimenes mas reportados son accidentes de transito, hurto y asistencia medica.
+
+```{r 3.1}
+crimes_by_group <- crimes_raw %>%
+  group_by(OFFENSE_CODE_GROUP) %>%
+  summarise(number_of_crimes = n())
+
+ggplot(crimes_by_group) +
+  geom_point(aes(x = reorder(OFFENSE_CODE_GROUP, number_of_crimes), y = number_of_crimes)) +
+  coord_flip()
+```
+
+## ¿Cuáles son los tres barrios más seguros y los tres barrios menos seguros de Boston?
+
+Se visualiza en cuales barrios de Boston se reportan mas crimenes.
+
+```{r 3.2}
+boston_neighborhoods <- read.csv("neighborhoods.csv")
+
+crimes_no_coord_na <- crimes_raw[which(!is.na(crimes_raw$LATITUDE) & !is.na(crimes_raw$LATITUDE)), ]
+
+getCount <- function(lng, lat) {
+  count <- point.in.polygon(crimes_no_coord_na$LATITUDE, crimes_no_coord_na$LONGITUDE, lng, lat)
+
+  return(sum(count))
+}
+
+grouped_neighborhoods <- boston_neighborhoods %>%
+  group_by(neighborhood) %>%
+  summarise(count = getCount(lng, lat))
+
+boston_neighborhoods_crimes <- boston_neighborhoods %>%
+  left_join(grouped_neighborhoods, by = c("neighborhood" = "neighborhood"), copy = TRUE)
+
+ggplot() +
+  geom_polygon(data = boston_neighborhoods_crimes, aes(x = lat, y = lng, group = neighborhood, fill = count)) +
+  coord_map()
+```
+
+En orden descendente, los barrios con mas crimenes reportados son:
+
+```{r 3.2a}
+extract_neighborhood <- function(name) {
+  ex <- str_extract(name, "[^_\\d]+")
+
+  return(ex)
+}
+
+crimes_by_neighborhood <- boston_neighborhoods_crimes %>%
+  group_by(neighborhood) %>%
+  summarise(number_of_crimes = unique(count)) %>%
+  mutate(full_neighborhood = extract_neighborhood(neighborhood)) %>%
+  group_by(full_neighborhood) %>%
+  summarise(number_of_crimes = sum(number_of_crimes)) %>%
+  arrange(desc(number_of_crimes))
+
+ggplot(crimes_by_neighborhood, aes(x = reorder(full_neighborhood, number_of_crimes), y = number_of_crimes)) +
+  geom_point() +
+  coord_flip()
+```
