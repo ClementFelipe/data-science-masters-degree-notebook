@@ -1,0 +1,29 @@
+---
+title: Ames Housing
+author: Felipe Clement
+---
+
+```{r libraries, include=FALSE}
+library(tidyverse)
+```
+
+## Load data
+
+```{r load}
+data <- read.csv("data.csv", sep = ";")
+str(data)
+head(data)
+```
+
+## Clean column names
+
+```{r clean}
+normalize_name <- function(name) {
+  matches <- str_extract_all(name, "([A-Z][a-z]+)|[A-Z]+(?![a-z]+)|\\d+")[[1]]
+  lowered <- tolower(matches)
+  paste(lowered, collapse = "_")
+}
+
+names(data) <- sapply(names(data), normalize_name)
+str(data)
+```

@@ -1,0 +1,73 @@
+---
+title: Limpieza
+author: Grupo super Claudia
+---
+
+```{r libraries, include=FALSE}
+library(tidyverse)
+```
+
+## Datos
+
+```{r data}
+source("limpiar.R")
+
+data_1 <- lt_house(read.csv("train.csv"))[,-1]
+
+data <- data_1[,c(1:20, 80)]
+
+str(data)
+summary(data)
+```
+
+## Filter bad columns
+
+The following variables are not considered:
+
+* `street`: This variable could cause a bias
+* `alley`: This variable has mostly NA's
+* `utilities`: All have the same value
+* `landslope`: Same as `street`
+* `condition1`: Same
+* `condition2`: Same
+* `bldgtype`: Same
+* `lotshape`: Same
+* `mszoning`: Same
+* `landcontour`: Same
+* `lotconfig`: Same
+* `lotfrontage`: Not really that relevant
+* `overallqual`: Included in overall cond
+
+```{r desc}
+bad_columns <- c("street", "alley", "utilities", "landslope", "condition1", "condition2", "bldgtype", "lotshape", "mszoning", "landcontour", "lotconfig", "lotfrontage", "overallqual")
+
+bad_columns_idx <- which(colnames(data) %in% bad_columns)
+
+data <- data[, -bad_columns_idx]
+summary(data)
+```
+
+## Correlate
+
+`lotarea`, `yearbuilt` and `yearremodadd` seem relevant, let's analyze them further.
+
+```{r cor}
+pairs(data)
+```
+
+## Visualize
+
+Lot area.
+
+```{r vis}
+data <- data[-which(data$lotarea > 20000),]
+ggplot(data) + geom_point(aes(x = lotarea, y = saleprice))
+ggplot(data, aes(x = yearbuilt, y = saleprice)) + geom_point() + geom_smooth(method = "lm", se = FALSE, col = "blue")
+ggplot(data) + geom_point(aes(x = yearremodadd, y = saleprice))
+```
+
+## Compare correlations
+
+```{r cors}
+cor(data$lotarea, data$saleprice)
+

@@ -1,0 +1,44 @@
+---
+title: Exploratory 1
+author: Felipe Clement
+date: "``r Sys.Date()"
+---
+
+```{r libs}
+library(tidyverse)
+library(scales)
+```
+
+# Basic
+
+```{r data}
+data <- read.csv("data.tsv", sep = "\t")[, -1]
+str(data)
+head(data)
+summary(data)
+```
+
+## Density, scales
+
+```{r density}
+ggplot(data) +
+  geom_density(aes(x = income)) +
+  scale_x_log10(breaks = c(10, 100, 1000, 10000), labels = dollar) +
+  annotation_logticks(sides = "bt")
+```
+
+## Frecuency table
+
+```{r table}
+table(data$sex)
+```
+
+## Mode
+
+```{r mode}
+get_mode <- function(vector) {
+  vector[which.max(tabulate(vector))]
+}
+
+get_mode(data$sex)
+```

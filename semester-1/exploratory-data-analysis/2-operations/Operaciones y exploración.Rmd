@@ -1,0 +1,277 @@
+---
+title: "Operaciones y exploraci?n"
+author: "Christian Urcuqui"
+date: "17 de enero de 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Operaciones, funciones y gr?ficos en R
+
+Vamos a utilizar otras funciones y operaciones en R que nos permitan filtrar y hacer operaciones en los datos. A continuaci?n, se muestra una tabla con la lista de operaciones tanto aritm?ticas como l?gicas que se pueden realizar entre los objetos de R.
+
+
+<img src='https://github.com/urcuqui/Data-Science/blob/master/Utilities/R/operations.png?raw=true' width='250' height='350'>
+
+Hagamos unas operaciones b?sicas, nosotros podemos utilizar R como una especie de "calculadora"" (muy parecido a la operaci?n entre celdas en Excel). En el siguiente cuadro de c?digo hay unas variables n?mericas con valores ya asignados con el fin que usted pueda realizar las siguientes operaciones:
+
++ x + y 
++ x * y 
++ -x
++ sqrt(x)
++ x == y
++ x != y
+
+_Ejercicio 1_
+
+```{R Oexample1}
+#Ejecute las siguientes tres l?neas de c?digo para crear las variables 
+x = c(1, 2, 4, 7, 9, 0)
+y = 4
+z = c(0.5, 2, 3, 5, 1, 0)
+
+# Escriba en el siguiente espacio la operaci?n suma entre "x" y "y", y as?gnelo a resultado_suma (1 l?nea de c?digo)
+resultado_suma <- 
+# Escriba en el siguiente espacio la operaci?n multiplicaci?n entre "x" y "z", y as?gnelo a resultado_multiplicacion (1 l?nea de c?digo)
+resultado_multiplicacion <- 
+# Escriba en el siguiente espacio la operaci?n multiplicaci?n negativa a "z", y as?gnelo a resultado_negativo (1 l?nea de c?digo)
+resultado_negativo <-
+# Escriba en el siguiente espacio la operaci?n de ra?z cuadrada "y", y as?gnelo a resultado_raiz (1 l?nea de c?digo)
+resultado_raiz <- 
+# Escriba en el siguiente espacio la operaci?n l?gica de igualdad entre "x" y "z", y as?gnelo a resultado_igualdad (1 l?nea de c?digo)
+resultado_igualdad <- 
+# Escriba en el siguiente espacio la operaci?n l?gica de diferencia entre "x" y "y", y as?gnelo a resultado_igualdad (1 l?nea de c?digo)
+resultado_diferencia <- 
+
+# --------------------------- #
+  
+# Ahora ejecute las siguientes l?neas de c?digo que le permitir?n observar los resultados de sus operaciones.  
+
+print("Resultado Suma")
+resultado_suma
+print("Resultado multiplicaci?n")
+resultado_multiplicacion
+print("Resultado negativo")
+resultado_negativo
+print("Resultado ra?z cuadrada")
+resultado_raiz
+print("Resultado de operaci?n l?gica: igualdad")
+resultado_igualdad
+print("Resultado de operaci?n l?gica: diferencia")
+resultado_diferencia
+```
+
+Ahora, exploremos la funci?n ```filter()``` del paquete``` dplyr```, esta funci?n nos permite obtener un subconjunto de un observaciones de un conjunto m?s grande basado en los par?metros que le suministremos, vea el siguiente ejemplo. 
+
+```
+filter(flights,  carrier == "UA")
+```
+
+La anterior l?nea de c?digo nos permite obtener todos los vuelos realizados por una sola aerol?nea (para nuestro caso aquella abreviada con "UA").
+
+En la siguiente tabla puede observar la sintaxis para las operaciones l?gicas en R.
+
+<img src='https://github.com/urcuqui/Data-Science/blob/master/Utilities/R/logical.png?raw=true' width='250' height='250'>
+
+
+Nosotros podemos realizar varias operaciones l?gicas enlazadas entre s?, por ejemplo:
+
+```
+filter(flights,  carrier == "B6" & distance <= 1500)
+```
+
+La anterior l?nea de c?digo nos da los vuelos realizados en el a?o 2014 y que tuvieron una distancia hasta 1500 millas.
+
+Ahora, le proponemos como ejercicio obtener el subconjunto de datos de los vuelos de la aerolinea "AA" que tuvieron una distancia entre 1300 y 1800 millas.
+
+
+_Ejercicio 2_
+
+```{R example2}
+library("nycflights13")
+library("tidyverse")
+with(flights, {
+# Escriba en el siguiente espacio el filtro que permita obtener el subconjunto de vuelos (1 l?nea de c?digo)
+
+# --------------------------- #
+})
+```
+
+## Gr?ficos
+
+R es una plataforma muy buena para el desarrollo de visualizaciones.
+
+```{R GExample1}
+attach(mtcars)
+plot(wt, mpg) # es la funci?n encargada de utilizar el visualizador de R y generar en ?l un gr?fico de dispersi?n entre las variables cuantitativas
+abline(lm(mpg~wt)) # encargada de agregar la l?nea que mejor se ajusta a los datos de las dos variables
+title("Regression of MPG on Weight") # agrega el titulo al plot
+detach(mtcars)
+```
+Ahora procederemos a guardar el plot en un archivo .pdf (previamente visto). 
+
+```{R GExample2}
+pdf("mygraph.pdf")
+attach(mtcars)
+plot(wt, mpg) # es la funci?n encargada de utilizar el visualizador de R y generar en ?l un gr?fico de dispersi?n entre las variables cuantitativas
+abline(lm(mpg~wt)) # encargada de agregar la l?nea que mejor se ajusta a los datos de las dos variables
+title("Regression of MPG on Weight")
+dev.off()
+```
+Es importante tener en cuenta que si vamos a generar distintos insumos podemos utilizar la funci?n ```dev.new()``` con el fin de especificar una nueva visualizaci?n y no exista la posibilidad de borrar alguno creado previamente.
+
+Vamos a empezar a explorar la aplicaci?n de visualizaciones en R a trav?s del siguiente ejercicio.
+
+_Ejercicio 1_
+
+Por favor cree un data frame con los siguientes valores:
+```
+dose <- c(20, 30, 40, 45, 60)
+drugA <- c(16, 20, 27, 40, 60)
+drugB <- c(15, 18, 25, 31, 40)
+```
+```{R exercise1}
+# escriba las lineas de c?digo necesarias para crear el data frame con los valores solicitados y que tenga el nombre df
+
+df <- data.frame(dose = c(20, 30, 40, 45, 60), drugA = c(16, 20, 27, 40, 60), drugB = c(15, 18, 25, 31, 40))
+
+
+# -----------------------------------
+```
+Ahora veamos c?mo crear un simple plot de una l?nea que relaciona la tendencia de dos variables cuantitativas
+```{R GExample3}
+myplot <- plot(df$dose, df$drugA, type="b")
+myplot
+```
+La funci?n ```plot()``` es gen?rica para objetos en R y su salida depender? del tipo de objeto a ser visualizado. Para el caso anterior podemos ver las variables de la siguiente forma en un plano 'x' y 'y'  ```plot(x, y, type="b") ```, los datos para 'x' iran en el eje horizontal y los de 'y' para el eje vertical. La opci?n  ```type``` nos indica que tanto los puntos y las lineas deben ser visualizadas. 
+
+_Ejercicio 2_ 
+
+Utilice la ayuda en la funci?n plot y busque la manera de cambiar los t?tulos de ambos ejes de la anterior visualizaci?n.
+
+```{R exercise2}
+# 1 linea de c?digo
+
+# --------------------
+```
+### Par?metros visuales
+
+Nosotros podemos cambiar muchos par?metros a una visualizaci?n (por ejemplo, estilo de letra, colores, ejes y t?tulos) a trav?s de los par?metros visuales.
+
+Una forma de acceder a estas opciones es trav?s de la funci?n ```par()```, su formato es ```par(optionname=value, optionname=value, ...)```. Especificando ```par()``` sin par?metros produce una lista de las configuraciones visuales actuales y adicionando la sentencia  ```no.readonly=TRUE```como par?metro a  ```par() ```, esta funci?n retorna la lista de las configuraciones visuales que se pueden modificar. 
+
+```{R GExample4}
+par(no.readonly=TRUE)
+```
+Vamos a modificar alguna de estas opciones y adicionarlas al plot previamente creado. 
+```{R GExample5}
+attach(df)
+opar <- par(no.readonly=TRUE)
+#lty es el tipo de linea 0=blank, 1=solid (default), 2=dashed, 3=dotted, 4=dotdash, 5=longdash, 6=twodash), tambi?n revise los siguientes caracteres como par?metros "blank", "solid", "dashed", "dotted", "dotdash", "longdash", or "twodash"
+#pch nos permite cambiar el simbolo por cada punto que representa un dato en la visualizaci?n
+par(lty=2, pch=17) 
+plot(dose, drugA, type="b")
+par(opar)
+detach(df)
+```
+Tambi?n podemos hacer las modificaciones visuales llamando varias veces la funci?n ```par()```, por ejemplo
+
+```
+par(lty=2)
+par(pch=17)
+```
+O podemos ir directamente a los par?metros del plot, por ejemplo
+
+```
+plot(dose, drugA. type="b", lty=2. pch=17)
+```
+
+### S?mbolos y l?neas 
+
+
+Ya hemos visto algunos par?metros que nos permiten acceder a las modificaciones visuales, pero existen otro conjunto que puede ser consultado en la ayuda de par, algunos de estos son:
+
+| __Par?metro__ | __Descripci?n__ | 
+|----------------|-----------------------------------------------------------------------|
+| _pch_ | Especifica el s?mbolo a usar en el punto que representa al dato en la visualizaci?n. Los valores de este par?metro van de 0-25. | 
+| _cex_ | Especifica el tama?o del s?mbolo que representa al dato en la visualizaci?n. Un plot inicia por default en 1, si se quiere especificar un 50% m?s grande entonces se define 1.5 como entrada, si se quiere un 50% m?s peque?o entonces se ingresa 0.5. | 
+| _lty_ | Especifica el tipo de linea. | 
+| _lwd_ | Especifica el grosor de la linea, por default viene con un valor de 1. Si se desea tener un valor el doble de grande entonces se utiliza el 2. | 
+
+```{R GExample6}
+attach(df)
+plot(dose, drugA, type="b", lty=3, lwd=3, pch=15, cex=2)
+detach(df)
+``` 
+### S?mbolos y l?neas 
+
+podemos tambi?n acceder a las propiedades de los colores del plot.
+
+| __Par?metro__ | __Descripci?n__ | 
+|----------------|-----------------------------------------------------------------------|
+| _col_ | Define el color, algunas funciones (lineas y pasteles) aceptaran vectors con valores, por ejemplo ```col=c("red", "blue")```. | 
+| _co.axis_ | Color para los textos del los ejes | 
+| _col.lab_ | Color para las etiquetas | 
+| _col.main_ | Color para el titulo. | 
+| _col.sub_ | Color para los subtitulos. |
+| _col.fg_ | Color para el primer plano |
+| _col.bg_ | Color para el fondo |
+
+Podemos definir los colores con un indice, nombre, hexadecimal, RGB o HSV. Por ejemplo, ```col=1, col="white", col="#FFFFFF", col=rgb(1,1,1), and col=hsv(0,0,1)``` son equivalentes para el color blanco. 
+
+```{R GExample7}
+# la siguiente funci?n retorna los colores disponibles
+colors()
+```
+
+Existen funciones que nos permiten crear vectores de colores contiguos, entre estos podemos encontrar ```rainbow(), heat.colors(), terrain.colors(), topo.colors(), and cm.colors().```, por ejemplo, ```rainbow(10)``` produce un vector contiguo de colores del arcoiris, ```gray()``` genera los niveles de grises. 
+
+```{R GExample8}
+n <- 10
+mycolors <- rainbow(n)
+#?pie
+#?rep
+pie(rep(1,n), labels=mycolors, col=mycolors)
+mygrays <- gray(0:n/n)
+pie(rep(1,n), labels= mygrays, col = mygrays)
+#plot con varias modificaciones 
+plot(1:7, rnorm(7), 
+     type = "s", xaxt = "n", frame = FALSE, col = "red")
+title("Main Title", sub = "sub title",
+      cex.main = 2,   font.main= 4, col.main= "green",
+      cex.sub = 0.75, font.sub = 3, col.sub = "yellow")
+axis(1, 1:7, LETTERS[1:7], col.axis = "blue", col.sub="green")
+
+```
+
+__Ejercicio 1__
+
+1. Revise el diccionario de datos del dataset mpg del paquete ggplot2
+2. Cargue el dataset mpg del paquete ggplot2 y cree un diagrama de dispersi?n de las variables disp y hwy
+
+```{R Excercise1}
+library("tidyverse")
+plot(ggplot2::mpg$displ, ggplot2::mpg$hwy)
+```
+?Logra encontrar alg?n patr?n en los datos?
+
+__Ejercicio 1__
+
+Asocie al anterior plot una tercera dimensi?n, es decir, asigne al p?rametro de color la variable class
+
+```{R Excercise1}
+attach(ggplot2::mpg)
+  class_factor = as.factor(class)
+  color_easy = c("red", "blue", "yellow", "green", "pink", "purple", "salmon2")[class_factor]
+  # una linea de c?digo
+  plot(displ, hwy, col=color_easy)
+  # -------------------------------
+detach(ggplot2::mpg)
+```
+
+## Referencias
+
++ R IN ACTION: Data analysis and graphics with R

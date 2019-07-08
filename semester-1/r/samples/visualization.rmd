@@ -1,0 +1,29 @@
+---
+#title: ggplot2
+author: Felipe Clement
+output: html_document
+---
+
+# ggplot2
+
+## Load library
+
+```{r library}
+library(tidyverse)
+```
+
+## Data
+
+```{r data}
+data <- mpg
+str(data)
+head(data)
+```
+
+## Plot
+
+`ggplot()` creates a **coordinate system** on which layers may be added.
+
+```{r plot}
+ggplot(data)
+```

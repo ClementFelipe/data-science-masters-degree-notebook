@@ -80,3 +80,59 @@ x[x %% 2 == 0]
 # Even positive non NA elements
 x[!is.na(x) & (x > 0) & (x %% 2 == 0)]
 ```
+
+## Objects
+
+Everything is an object (and all objects have length), they can have a primitive _type (mode)_ of:
+
+  - numeric
+  - complex
+  - logical
+  - character
+  - raw
+  
+Other types are:
+
+  - data.frame
+  - list
+  - array
+  - matrix
+  - factor
+  
+*Atomic* structures (vectors) consist of elements of the same mode.
+
+*Recursive* structures (list, function, expression) possibly consist of elements of different modes.
+
+```{r objects}
+x <- as.data.frame(1:3)
+
+length(x)
+mode(x)
+
+# Returns all non intrinsic properties (mode, length)
+attributes(x)
+```
+
+Objects can be coerced into other modes (casting):
+
+```{r casting}
+x <- 1:3
+
+as.character(x)
+```
+
+Get or set attributes
+```{r get_set}
+x <- as.data.frame(1:3)
+x
+
+# Get
+attributes(x)
+attr(x, "names")
+
+# Set
+attr(x, "names") <- c("aaa")
+x
+```
+
+## Factors

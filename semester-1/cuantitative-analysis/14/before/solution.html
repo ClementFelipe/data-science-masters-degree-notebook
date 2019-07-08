@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Felipe Clement - Lina Quintero" />
+
+<meta name="date" content="2019-03-11" />
+
+<title>Model Selection</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Model Selection</h1>
+<h4 class="author"><em>Felipe Clement - Lina Quintero</em></h4>
+<h4 class="date"><em>2019-03-11</em></h4>
+
+
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(formattable)
+<span class="kw">library</span>(AER)</code></pre></div>
+<pre><code>## Loading required package: car</code></pre>
+<pre><code>## Loading required package: carData</code></pre>
+<pre><code>## Loading required package: lmtest</code></pre>
+<pre><code>## Loading required package: zoo</code></pre>
+<pre><code>## 
+## Attaching package: 'zoo'</code></pre>
+<pre><code>## The following objects are masked from 'package:base':
+## 
+##     as.Date, as.Date.numeric</code></pre>
+<pre><code>## Loading required package: sandwich</code></pre>
+<pre><code>## Loading required package: survival</code></pre>
+<div id="model-selection" class="section level1">
+<h1>Model Selection</h1>
+<div id="load-data" class="section level2">
+<h2>Load data</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">raw_data &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;data.csv&quot;</span>)
+<span class="kw">str</span>(raw_data)</code></pre></div>
+<pre><code>## 'data.frame':    150 obs. of  12 variables:
+##  $ X  : int  1 2 3 4 5 6 7 8 9 10 ...
+##  $ x1 : num  5.92 4.57 5.44 4.91 5.7 ...
+##  $ x2 : num  6.51 3.64 5.5 5.85 6.33 ...
+##  $ x3 : num  6.88 4.38 6.6 6.54 5.28 ...
+##  $ x4 : num  5.16 5.06 4.48 5.71 5.02 ...
+##  $ x5 : num  6.42 3.17 4.99 4.67 4.23 ...
+##  $ x6 : num  5.83 4.6 5.52 5.26 5.77 ...
+##  $ x7 : num  5.36 4.58 6.24 5.79 4.47 ...
+##  $ x8 : num  6.63 4.17 5.4 5.07 4.77 ...
+##  $ x9 : num  5.73 4.26 5.46 5.5 6.06 ...
+##  $ x10: num  6.11 4.44 5.57 4.64 5.5 ...
+##  $ y  : num  42.8 30.4 36.3 36.6 38.3 ...</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(raw_data)</code></pre></div>
+<pre><code>##   X    x1    x2    x3    x4    x5    x6    x7    x8    x9   x10      y
+## 1 1 5.925 6.512 6.883 5.157 6.420 5.833 5.356 6.626 5.730 6.108 42.799
+## 2 2 4.565 3.638 4.378 5.056 3.165 4.598 4.576 4.171 4.259 4.443 30.372
+## 3 3 5.436 5.501 6.596 4.476 4.992 5.524 6.235 5.402 5.465 5.568 36.338
+## 4 4 4.912 5.849 6.545 5.715 4.668 5.259 5.786 5.070 5.499 4.640 36.630
+## 5 5 5.696 6.330 5.279 5.017 4.229 5.769 4.468 4.771 6.062 5.495 38.275
+## 6 6 4.009 4.584 4.220 6.463 5.511 4.917 5.920 3.492 3.219 5.073 37.413</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">data &lt;-<span class="st"> </span>raw_data[, <span class="op">-</span><span class="dv">1</span>]
+<span class="kw">str</span>(data)</code></pre></div>
+<pre><code>## 'data.frame':    150 obs. of  11 variables:
+##  $ x1 : num  5.92 4.57 5.44 4.91 5.7 ...
+##  $ x2 : num  6.51 3.64 5.5 5.85 6.33 ...
+##  $ x3 : num  6.88 4.38 6.6 6.54 5.28 ...
+##  $ x4 : num  5.16 5.06 4.48 5.71 5.02 ...
+##  $ x5 : num  6.42 3.17 4.99 4.67 4.23 ...
+##  $ x6 : num  5.83 4.6 5.52 5.26 5.77 ...
+##  $ x7 : num  5.36 4.58 6.24 5.79 4.47 ...
+##  $ x8 : num  6.63 4.17 5.4 5.07 4.77 ...
+##  $ x9 : num  5.73 4.26 5.46 5.5 6.06 ...
+##  $ x10: num  6.11 4.44 5.57 4.64 5.5 ...
+##  $ y  : num  42.8 30.4 36.3 36.6 38.3 ...</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(data)</code></pre></div>
+<pre><code>##      x1    x2    x3    x4    x5    x6    x7    x8    x9   x10      y
+## 1 5.925 6.512 6.883 5.157 6.420 5.833 5.356 6.626 5.730 6.108 42.799
+## 2 4.565 3.638 4.378 5.056 3.165 4.598 4.576 4.171 4.259 4.443 30.372
+## 3 5.436 5.501 6.596 4.476 4.992 5.524 6.235 5.402 5.465 5.568 36.338
+## 4 4.912 5.849 6.545 5.715 4.668 5.259 5.786 5.070 5.499 4.640 36.630
+## 5 5.696 6.330 5.279 5.017 4.229 5.769 4.468 4.771 6.062 5.495 38.275
+## 6 4.009 4.584 4.220 6.463 5.511 4.917 5.920 3.492 3.219 5.073 37.413</code></pre>
+</div>
+<div id="create-models" class="section level2">
+<h2>Create models</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span>x1 <span class="op">+</span><span class="st"> </span>x2 <span class="op">+</span><span class="st"> </span>x3 <span class="op">+</span><span class="st"> </span>x6 <span class="op">+</span><span class="st"> </span>x7, data)
+model_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span>x1 <span class="op">+</span><span class="st"> </span>x2 <span class="op">+</span><span class="st"> </span>x3, data)
+model_<span class="dv">3</span> &lt;-<span class="st"> </span><span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span>x4 <span class="op">+</span><span class="st"> </span>x5 <span class="op">+</span><span class="st"> </span>x8 <span class="op">+</span><span class="st"> </span>x9 <span class="op">+</span><span class="st"> </span>x10, data)
+
+<span class="kw">summary</span>(model_<span class="dv">1</span>)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = y ~ x1 + x2 + x3 + x6 + x7, data = data)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -8.4002 -1.9949 -0.3103  1.6862  7.9923 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  12.3895     1.4922   8.303 6.74e-14 ***
+## x1            0.9530     0.2699   3.530 0.000558 ***
+## x2            1.9356     0.2953   6.556 9.24e-10 ***
+## x3            1.0378     0.2902   3.576 0.000475 ***
+## x6            0.4125     0.2719   1.517 0.131516    
+## x7            0.1674     0.2873   0.583 0.561116    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 2.722 on 144 degrees of freedom
+## Multiple R-squared:  0.651,  Adjusted R-squared:  0.6389 
+## F-statistic: 53.72 on 5 and 144 DF,  p-value: &lt; 2.2e-16</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(model_<span class="dv">2</span>)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = y ~ x1 + x2 + x3, data = data)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -8.226 -2.009 -0.293  1.633  8.280 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  13.1762     1.4271   9.233 2.83e-16 ***
+## x1            1.0484     0.2658   3.945 0.000124 ***
+## x2            2.1334     0.2743   7.778 1.22e-12 ***
+## x3            1.1619     0.2764   4.203 4.57e-05 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 2.734 on 146 degrees of freedom
+## Multiple R-squared:  0.6431, Adjusted R-squared:  0.6357 
+## F-statistic: 87.68 on 3 and 146 DF,  p-value: &lt; 2.2e-16</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(model_<span class="dv">3</span>)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = y ~ x4 + x5 + x8 + x9 + x10, data = data)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -8.0069 -1.6014 -0.0442  2.1566  7.5445 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  14.0332     1.5928   8.811 3.65e-15 ***
+## x4            1.4291     0.3060   4.670 6.84e-06 ***
+## x5            1.5334     0.2994   5.122 9.56e-07 ***
+## x8            0.4434     0.3189   1.391   0.1665    
+## x9            0.1754     0.3157   0.556   0.5793    
+## x10           0.5889     0.3331   1.768   0.0792 .  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 3.036 on 144 degrees of freedom
+## Multiple R-squared:  0.5658, Adjusted R-squared:  0.5507 
+## F-statistic: 37.53 on 5 and 144 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+<div id="visualize-goodness-of-fit" class="section level2">
+<h2>Visualize Goodness of Fit</h2>
+<p>AIC and BIC suggest the best model is 2, while adjusted R squared suggests it’s 1.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">metrics_<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">c</span>(
+  <span class="kw">summary</span>(model_<span class="dv">1</span>)<span class="op">$</span>adj.r.squared,
+  <span class="kw">AIC</span>(model_<span class="dv">1</span>),
+  <span class="kw">BIC</span>(model_<span class="dv">1</span>)
+)
+
+metrics_<span class="dv">2</span> &lt;-<span class="st"> </span><span class="kw">c</span>(
+  <span class="kw">summary</span>(model_<span class="dv">2</span>)<span class="op">$</span>adj.r.squared,
+  <span class="kw">AIC</span>(model_<span class="dv">2</span>),
+  <span class="kw">BIC</span>(model_<span class="dv">2</span>)
+)
+
+metrics_<span class="dv">3</span> &lt;-<span class="st"> </span><span class="kw">c</span>(
+  <span class="kw">summary</span>(model_<span class="dv">3</span>)<span class="op">$</span>adj.r.squared,
+  <span class="kw">BIC</span>(model_<span class="dv">3</span>),
+  <span class="kw">AIC</span>(model_<span class="dv">3</span>)
+)
+
+customGreen0 &lt;-<span class="st"> &quot;#DeF7E9&quot;</span>
+customGreen &lt;-<span class="st"> &quot;#71CA97&quot;</span>
+
+row_names &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;R Sq Adj&quot;</span>, <span class="st">&quot;AIC&quot;</span>, <span class="st">&quot;BIC&quot;</span>)
+consolidated &lt;-<span class="st"> </span><span class="kw">data.frame</span>(metrics_<span class="dv">1</span>, metrics_<span class="dv">2</span>, metrics_<span class="dv">3</span>, <span class="dt">row.names =</span> row_names)
+<span class="kw">formattable</span>(consolidated,
+  <span class="dt">align =</span> <span class="kw">c</span>(<span class="st">&quot;l&quot;</span>, <span class="kw">rep</span>(<span class="st">&quot;c&quot;</span>, <span class="dv">3</span>))
+)</code></pre></div>
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+metrics_1
+</th>
+<th style="text-align:center;">
+metrics_2
+</th>
+<th style="text-align:center;">
+metrics_3
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+R Sq Adj
+</td>
+<td style="text-align:left;">
+0.6388607
+</td>
+<td style="text-align:center;">
+0.6357257
+</td>
+<td style="text-align:center;">
+0.5507108
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AIC
+</td>
+<td style="text-align:left;">
+733.9570836
+</td>
+<td style="text-align:center;">
+733.3226118
+</td>
+<td style="text-align:center;">
+787.7919839
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+BIC
+</td>
+<td style="text-align:left;">
+755.0315307
+</td>
+<td style="text-align:center;">
+748.3757882
+</td>
+<td style="text-align:center;">
+766.7175369
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="compare-model-1-and-2" class="section level2">
+<h2>Compare Model 1 and 2</h2>
+<p>Since p-value is too high, we cannot reject the <code>H0: model_2</code>, therefore, model_1 is better.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">anova</span>(model_<span class="dv">2</span>, model_<span class="dv">1</span>)</code></pre></div>
+<pre><code>## Analysis of Variance Table
+## 
+## Model 1: y ~ x1 + x2 + x3
+## Model 2: y ~ x1 + x2 + x3 + x6 + x7
+##   Res.Df    RSS Df Sum of Sq      F Pr(&gt;F)
+## 1    146 1091.1                           
+## 2    144 1066.9  2    24.207 1.6337 0.1988</code></pre>
+</div>
+<div id="comparing-model-3" class="section level2">
+<h2>Comparing Model 3</h2>
+<p>Since both p-values in each test mean we reject the respective null hypothesis of one model being better than the other, we can’t conclude that either model is better than the other.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">jtest</span>(model_<span class="dv">1</span>, model_<span class="dv">3</span>)</code></pre></div>
+<pre><code>## J test
+## 
+## Model 1: y ~ x1 + x2 + x3 + x6 + x7
+## Model 2: y ~ x4 + x5 + x8 + x9 + x10
+##                 Estimate Std. Error t value  Pr(&gt;|t|)    
+## M1 + fitted(M2)  0.48221   0.103789   4.646 7.606e-06 ***
+## M2 + fitted(M1)  0.81939   0.095489   8.581 1.427e-14 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">jtest</span>(model_<span class="dv">2</span>, model_<span class="dv">3</span>)</code></pre></div>
+<pre><code>## J test
+## 
+## Model 1: y ~ x1 + x2 + x3
+## Model 2: y ~ x4 + x5 + x8 + x9 + x10
+##                 Estimate Std. Error t value  Pr(&gt;|t|)    
+## M1 + fitted(M2)  0.46880   0.093090  5.0360 1.391e-06 ***
+## M2 + fitted(M1)  0.78589   0.090552  8.6788 8.131e-15 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">coxtest</span>(model_<span class="dv">1</span>, model_<span class="dv">3</span>)</code></pre></div>
+<pre><code>## Cox test
+## 
+## Model 1: y ~ x1 + x2 + x3 + x6 + x7
+## Model 2: y ~ x4 + x5 + x8 + x9 + x10
+##                 Estimate Std. Error  z value  Pr(&gt;|z|)    
+## fitted(M1) ~ M2  -20.255     4.4843  -4.5169 6.275e-06 ***
+## fitted(M2) ~ M1  -44.422     4.1659 -10.6632 &lt; 2.2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">coxtest</span>(model_<span class="dv">2</span>, model_<span class="dv">3</span>)</code></pre></div>
+<pre><code>## Cox test
+## 
+## Model 1: y ~ x1 + x2 + x3
+## Model 2: y ~ x4 + x5 + x8 + x9 + x10
+##                 Estimate Std. Error  z value  Pr(&gt;|z|)    
+## fitted(M1) ~ M2  -24.191     4.6851  -5.1634 2.425e-07 ***
+## fitted(M2) ~ M1  -47.896     4.1226 -11.6180 &lt; 2.2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

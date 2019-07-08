@@ -1,0 +1,2 @@
+1. Extract CSV from sales.csv
+2. Extract countries from restcountries.eu/rest/v2/all

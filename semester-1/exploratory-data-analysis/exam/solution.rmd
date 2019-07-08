@@ -1,0 +1,154 @@
+---
+title: Examen
+author: Felipe Clement Santacruz
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    theme: yeti
+    highlight: tango
+---
+
+```{r libs, include=FALSE}
+library(tidyverse)
+gctorture(FALSE)
+```
+
+# Datos
+
+```{r data}
+data <- read.csv("data.csv", sep = ";")
+str(data)
+```
+
+# Preguntas {.tabset .tabset-pills}
+
+## jfjvjhkvkjb
+
+Explore la variable ESTU_INST_MUNICIPIO del dataset suministrado. Seleccione de la siguiente lista aquellos problemas que se encuentran presentes en los datos de esta variable
+Seleccione una o más de una:
+
+- [ ] Formato de los valores no coinciden con el tipo de dato de la variable
+- [ ] Observaciones duplicadas
+- [ ] Valores perdidos
+- [X] Valores fuera del rango o inválidos: `Existen nombres de municioios como: BOGOT\xc1 D.C.`
+
+```{r p2}
+estu_inst_muni <- data$ESTU_INST_MUNICIPIO
+
+levels(estu_inst_muni)
+summary(estu_inst_muni)
+```
+
+## 3
+
+Genere un subset (guárdelo en un objeto llamado "subset_sabertyt") a partir del dataset original, de manera que en el subset se incluyan las variables:
+
+```
+"MOD_RAZONA_CUANTITAT_PUNT", "MOD_LECTURA_CRITICA_PUNT", "MOD_COMUNI_ESCRITA_PUNT", "ESTU_INST_MUNICIPIO", "ESTU_GENERO", "ESTU_PRGM_ACADEMICO", "INST_NOMBRE_INSTITUCION"
+```
+
+solo para aquellos registros en los que el estado del evaluado sea "PUBLICAR" (es decir, que los resultados han sido validados y pueden publicarse) y el nivel del programa académico del evaluado sea "TÉCNICO PROFESIONAL"
+
+El número de observaciones incluidas en el nuevo dataset corresponde a (indique la cifra sin separadores de miles):
+
+```{r p3}
+levels(data$ESTU_NIVEL_PRGM_ACADEMICO)
+levels(data$ESTU_ESTADO)
+
+subset_sabertyt <- data %>%
+  filter(ESTU_ESTADO == "PUBLICAR" & ESTU_NIVEL_PRGM_ACADEMICO == "T\xc9CNICO PROFESIONAL") %>%
+  select(
+    MOD_RAZONA_CUANTITAT_PUNT,
+    MOD_LECTURA_CRITICA_PUNT,
+    MOD_COMUNI_ESCRITA_PUNT,
+    ESTU_INST_MUNICIPIO,
+    ESTU_GENERO,
+    ESTU_PRGM_ACADEMICO,
+    INST_NOMBRE_INSTITUCION
+  )
+
+nrow(subset_sabertyt)
+```
+
+## 4
+
+Para los estudiantes cuya prueba se encuentra en estado "PUBLICAR" y que fueron evaluados en el nivel "TÉCNICO PROFESIONAL", calcular (indicar los valores sin separadores de miles, y usando LA COMA para indicar cifras decimales, solo si aplica. Trunque los decimales incluyendo solo dos cifras) :
+
+1) El puntaje promedio obtenido en la prueba de razonamiento cuantitativo
+
+Respuesta:
+
+```{r p4_1}
+mean(subset_sabertyt$MOD_RAZONA_CUANTITAT_PUNT)
+```
+
+2) La desviación estándar de la prueba lectura crítica
+
+Respuesta:
+
+```{r p4_2}
+sd(subset_sabertyt$MOD_LECTURA_CRITICA_PUNT)
+```
+
+3) El puntaje máximo obtenido en la prueba de comunicación escrita
+
+Respuesta:
+
+```{r p4_3}
+filtered <- subset_sabertyt[!is.na(subset_sabertyt$MOD_COMUNI_ESCRITA_PUNT),]
+
+max(filtered$MOD_COMUNI_ESCRITA_PUNT)
+```
+
+4) El puntaje mínimo obtenido en la prueba de comunicación escrita
+
+Respuesta:
+
+```{r p4_4}
+min(filtered$MOD_COMUNI_ESCRITA_PUNT)
+```
+
+## 5
+
+Análisis univariado de la variable "MOD_RAZONA_CUANTITAT_PUNT" del dataset "subset_sabertyt".
+
+1. La variable sigue una distribución:
+
+Normal
+No Normal
+Debido al tipo, la variable no presenta distribución alguna
+
+
+```{r p5_1}
+ggplot(subset_sabertyt) +
+  geom_density(aes(x = MOD_RAZONA_CUANTITAT_PUNT))
+```
+
+2. La cantidad de valores que se encuentran por encima del valor máximo y por debajo del valor mínimo es:
+
+Respuesta:
+
+```{r p5_2}
+outliers <- boxplot(subset_sabertyt$MOD_RAZONA_CUANTITAT_PUNT)$out
+length(which(subset_sabertyt$MOD_RAZONA_CUANTITAT_PUNT %in% outliers))
+```
+
+## 6
+
+¿Cuáles son las primeras 3 instituciones de nivel técnico profesional en Bogotá que obtuvieron el mejor puntaje promedio en razonamiento cuantitativo (el promedio de los puntajes de sus evaluados) en la sprueba Saber TyT en 2016-2? Indique los nombres de las instituciones, ordenadas de mayor a menor puntaje, copiando los nombres tal cual desde la consola de R.
+
+```{r p6}
+sub <- data %>%
+  filter(INST_CARACTER_ACADEMICO == "T\xc9CNICA PROFESIONAL" & ESTU_INST_MUNICIPIO == "BOGOT\xc1 D.C.") %>%
+  group_by(INST_NOMBRE_INSTITUCION) %>%
+  summarize(
+    PROMEDIO_RAZONAMIENTO = mean(MOD_RAZONA_CUANTITAT_PUNT)
+  ) %>%
+  arrange(-PROMEDIO_RAZONAMIENTO) %>%
+  top_n(3)
+
+sub$INST_NOMBRE_INSTITUCION
+```

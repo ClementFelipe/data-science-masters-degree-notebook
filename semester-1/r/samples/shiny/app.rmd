@@ -1,0 +1,31 @@
+---
+title: Shiny app demo
+runtime: shiny
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r app, echo=FALSE}
+ui <- fluidPage(
+  sliderInput(
+    inputId = "num",
+    label = "Choose a number",
+    value = 10000,
+    min = 10000,
+    max = 100000,
+    step = 10000
+  ),
+  plotOutput("hist")
+)
+
+server <- function(input, output) {
+  output$hist <- renderPlot({
+    hist(rnorm(input$num))
+  })
+}
+
+shinyApp(ui, server)
+```

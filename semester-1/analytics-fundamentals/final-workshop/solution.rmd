@@ -1,0 +1,51 @@
+```{r libs}
+library(caret)
+library(doParallel)
+```
+
+# Carga
+
+```{r load}
+data <- read.csv("dataset.csv")[,-1]
+```
+
+# Partition
+
+```{r partition}
+set.seed(1)
+
+data_training_index <- createDataPartition(data$target, p = 0.16, list = FALSE, times = 1)
+
+data_training <- data[data_training_index, ]
+data_test <- data[-data_training_index, ]
+
+nrow(data_training)
+nrow(data_test)
+```
+
+# Parallel setup
+
+```{r parallel}
+cluster <- makePSOCKcluster(11)
+registerDoParallel(cluster)
+```
+
+# Adaboost
+
+```{r ada}
+model_ada <- train(target ~ ., data_training,
+  method = "AdaBoost.M1",
+  metric = "ROC",
+  trControl = trainControl(method = "repeatedcv", number = 5, repeats = 1, summaryFunction = twoClassSummary, classProbs = TRUE, allowParallel = TRUE),
+  tuneGrid = expand.grid(mfinal = 1:500, maxdepth = c(3, 5), coeflearn = c("Breiman"))
+)
+
+model_ada
+plot(model_ada)
+```
+
+# Parallel teardown
+
+```{r parallel_close}
+stopCluster(cluster)
+```

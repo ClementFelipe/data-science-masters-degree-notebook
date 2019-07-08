@@ -6,6 +6,5 @@
 *.pdf
 *.jpg
 .Rproj.user
-*.html
 *.Rproj
 *.swp

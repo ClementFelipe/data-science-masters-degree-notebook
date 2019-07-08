@@ -68,12 +68,10 @@ x <- rnorm(5)
 Por favor escriba el anterior ejemplo y ejecutelo en el pr?ximo espacio.
 
 _Ejercicio 1_
-```{r example1}
-## Escriba el ejemplo en el siguiente espacio (1 l?nea de c?digo) ##
-x <- rnorm(50)
-# --------------------------- #
-x
+```{node}
+const arr = [1,2,3];
 
+console.log(arr)
 ```
 
 Los comentarios sobre el c?digo podemos agregarlos con _#_.
@@ -178,10 +176,10 @@ R por defecto inicializa su trabajo obteniendo las entradas desde el teclado y d
 Descargue el archivo example2.R, en el archivo actual de R que se encuentra trabajando utilice la funci?n source() y dentro del par?ntesis escriba el nombre del archivo descargado, es decir, source("example2.R). Finalmente, ejecute la anterior instrucci?n y observar? que har? un llamado a un archivo externo con l?neas de c?digo. 
 
 ```{R inputExample}
-source("../example2.R")
+source("example2.r")
 ```
 ```{R outputExample, echo=FALSE}
-source("../example3.R")
+source("example3.r")
 ```
 
 Existen varias funciones que nos permiten crear archivos de distinto tipo, por ejemplo:
@@ -260,8 +258,8 @@ _Ejercicio 5_
 ```{R example4}
 # Escriba el c?digo que permita instalar y cargar los dos paquetes (cuatro l?neas)
 
-install.packages("tidyverse")
-install.packages("nycflights13")
+#install.packages("tidyverse")
+#install.packages("nycflights13")
 
 # --------------------------- #
 ```
@@ -509,11 +507,11 @@ detach(mtcars)
 Este enfoque tiene limitaciones cuando los objetos almacenados en memoria tienen el mismo nombre. 
 
 ```{r attachExample3}
-mpg <- c(25, 36, 47)
-attach(mtcars)
-  plot(mpg, wt)
-detach(mtcars)
-mpg
+#mpg <- c(25, 36, 47)
+#attach(mtcars)
+#  plot(mpg, wt)
+#detach(mtcars)
+#mpg
 ```
 
 Para estos casos se puede utilizar un enfoque distinto a trav?s de la funci?n _with()_, apliquemos esta alternativa con el ejemplo anterior. ?Qu? utilidad observa?
@@ -537,13 +535,13 @@ with(mtcars, {
   stats <- summary(mpg)
   stats
 })
-stats
+#stats
  
 ```
 Si es necesario crear o asignar a un objeto dentro de este debemos utilizar el operador <<-
 ```{r attachExample6}
 with(mtcars, {
-  nokeepstats <- summary(mpg)
+  nokeepstats <<- summary(mpg)
   keepstats <<- summary(mpg)
 })
 keepstats
@@ -578,7 +576,8 @@ Escriba y ejecute el c?digo necesario para crear el factor ordinal ```PartientSt
 
 ```{R ejercicioFactor1}
 # 1 linea de c?digo
-
+l <- c('Poor', 'Improved', 'Excellent')
+PatientStatus <- factor(l, levels = l)
 # -------------------
 PatientStatus
 ```
@@ -588,7 +587,7 @@ _Ejercicio 11_
 Si x <- c(1, 2, 3, 3, 5, 3, 2, 4, NA), ?cu?les son los niveles de factor(x)?
 ```{R ejercicioFactor2}
 # 1 linea de c?digo
-
+x <- factor(c(1, 2, 3, 3, 5, 3, 2, 4, NA))
 # -------------------
 x
 ```
@@ -603,7 +602,7 @@ R/
 
 ```{R ejercicioFactor3}
 # 2 lineas de c?digo
-
+x <- factor(x <- c(11, 22, 47, 47, 11, 47, 11), levels = c(11, 22, 47), ordered = TRUE)
 
 # -------------------
 ```
@@ -619,8 +618,8 @@ R/
 
 ```{R ejercicioFactor4}
 # 2 lineas de c?digo
-
-
+z <- factor(c("p", "a" , "g", "t", "b"))
+z[3] <- 'b'
 # -------------------
 z
 ```
@@ -683,9 +682,9 @@ Para el siguiente ejercicio cargue el archivo "parks.csv" y asignelo a una varia
 
 _Ejercicio 14_
 
-```{R example1}
+```{R example11111}
 # Escriba en el siguiente espacio el c?digo que permita cargar el archivo parks.csv (1 l?nea de c?digo)
-
+df <- read.csv("parks.csv", stringsAsFactors = FALSE)
 # --------------------------- #
 ```
 ## Ingresando datos desde el teclado 
@@ -698,6 +697,7 @@ Ejecute el siguiente c?digo e ingrese los elementos que completen el dataframe.
 
 ```{R Inexample1}
 mydata <- data.frame(age=numeric(0), gender=character(0), weight=numeric(0))
+View(mydata)
 mydata <- edit(mydata)
 
 ```

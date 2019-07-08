@@ -7,6 +7,8 @@ output: html_document
 
 ```{r libraries, include=FALSE}
 library(formattable)
+library(purrr)
+library(repurrrsive)
 ```
 
 # Problem
@@ -42,43 +44,21 @@ head(data)
 ## Models
 
 ```{r models}
-model_1 <- lm(I ~ CE + CD, data)
-model_2 <- lm(I ~ Ldies + LEl, data)
-model_3 <- lm(I ~ V, data)
-model_4 <- lm(I ~ CE + LEl, data)
-model_5 <- lm(I ~ CD + Ldies, data)
-model_6 <- lm(I ~ CE + Ldies + LEl + V, data)
-model_7 <- lm(I ~ CE + CD + V, data)
+models <- data.frame(modelo=c(
+  lm(I ~ CE + CD, data),
+  lm(I ~ Ldies + LEl, data),
+  lm(I ~ V, data),
+  lm(I ~ CE + LEl, data),
+  lm(I ~ CD + Ldies, data),
+  lm(I ~ CE + Ldies + LEl + V, data),
+  lm(I ~ CE + CD + V, data)
+))
 
-adj_r <- c(
-  summary(model_1)$adj.r.squared,
-  summary(model_2)$adj.r.squared,
-  summary(model_3)$adj.r.squared,
-  summary(model_4)$adj.r.squared,
-  summary(model_5)$adj.r.squared,
-  summary(model_6)$adj.r.squared,
-  summary(model_7)$adj.r.squared
-)
 
-aic <- c(
-  AIC(model_1),
-  AIC(model_2),
-  AIC(model_3),
-  AIC(model_4),
-  AIC(model_5),
-  AIC(model_6),
-  AIC(model_7)
-)
+adj_r <- apply(apply(models, FUN=lm), FUN=function(x) summary(x)$adj.r.squared)
 
-bic <- c(
-  BIC(model_1),
-  BIC(model_2),
-  BIC(model_3),
-  BIC(model_4),
-  BIC(model_5),
-  BIC(model_6),
-  BIC(model_7)
-)
+aic <- sapply(models, AIC)
+bic <- sapply(models, BIC)
 
 customGreen0 <- "#DeF7E9"
 customGreen <- "#71CA97"
