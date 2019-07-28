@@ -1,0 +1,110 @@
+---
+title: Time series key concepts
+---
+
+```{r installs, include=FALSE}
+library(httr)
+library(dplyr)
+library(xts)
+```
+
+This document will focus on key time series concepts, primarily statistical forecasting methods for forecasting.
+
+A time series can interchangeably mean:
+
+* An ordered set of variable observations
+* A probabilistic model that describes the target variable behavior
+
+## Types of forecasts
+
+Two types of forecasts can be made with time series:
+
+* **Qualitative**: Subjective predictions based on opinion, gut feeling, domain knowledge, experience, etc
+  * Performed by an individual or group
+  * No data is used
+
+* **Quantitative**: Based on historical data
+
+## Types of statistical methods
+
+Statistical methods are divided into two categories:
+
+* **Univariate**: Predict behavior of one variable based on its past behavior
+* **Multivariate**: Predict behavior of one variable based on itself and others
+
+## Components of a time series
+
+A time series may be composed of:
+
+* Trend
+* Cyclical factor
+* Seasonality
+* Randomness
+
+## Examples
+
+Unemployment data from Colombia will be loaded from S3.
+
+```{r load_unemployment_data}
+employmentDataUrl <- "https://masters-datasets.s3.us-east-2.amazonaws.com/semester-2/analytics-fundamentals-2/timeseries/datosEmpleo.csv"
+
+employmentDataRaw <- GET(employmentDataUrl)$content %>%
+  rawToChar() %>%
+  textConnection() %>%
+  read.csv()
+
+employmentDataRaw$mes <- as.Date(employmentDataRaw$mes, format = "%m/%d/%y")
+
+head(employmentDataRaw)
+```
+
+A `ts` object will be formed from the data.
+
+```{r tsify_unemployment_data}
+employmentData <- ts(employmentDataRaw[, -1], start = c(2001, 1), frequency = 12)
+
+head(employmentData)
+periodicity(employmentData)
+ts.plot(employmentData[, 1])
+```
+
+An `xts` object can also be formed.
+
+```{r xtsify_unemployment_data}
+employmentDataXts <- xts(employmentDataRaw[, -1], order.by = employmentDataRaw$mes)
+
+plot.xts(employmentDataXts$TD_13ciudades)
+```
+
+Monthly monetary base for Colombia is loaded.
+
+```{r load_monetary_base}
+monetaryDataUrl <- "https://masters-datasets.s3.us-east-2.amazonaws.com/semester-2/analytics-fundamentals-2/timeseries/base.csv"
+
+monetaryDataRaw <- GET(monetaryDataUrl)$content %>%
+  rawToChar() %>%
+  textConnection() %>%
+  read.csv()
+
+head(monetaryDataRaw)
+```
+
+A `ts` object is formed from this data.
+
+```{r tsfy_monetary_data}
+monetaryData <- ts(monetaryDataRaw, start = c(1980, 1), frequency = 12)
+
+ts.plot(monetaryData)
+```
+
+Monetary base data can be decomposed multiplicatively since seasonal component seems to be directly proportional to the value of the series.
+
+```{r decompose_base}
+plot(decompose(monetaryData, type = "multiplicative"))
+```
+
+Unemployment data seasonality does not seem to depend on the value and can be decomposed additively.
+
+```{r decompose_uneployment}
+plot(decompose(employmentData[,1]))
+```
