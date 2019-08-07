@@ -1,0 +1,163 @@
+---
+title: Taller en clase 2
+author: Lina Marcela Quintero - Felipe Clement
+---
+
+```{r installs, include=FALSE}
+library(readxl)
+library(forecast)
+library(tseries)
+```
+
+
+```{r load, include=FALSE}
+# # Lectura de datos
+#
+# Se cargan los datos de personas ocupadas.
+data <- read_excel("datosEmpleo.xlsx", col_types = c("date", "numeric", "numeric", "numeric", "numeric"))
+
+data.ts <- ts(data[, -1], start = c(2001, 1), frequency = 12)
+
+ocupados.ts <- data.ts[, 2]
+
+ts.plot(ocupados.ts, main = "Ocupados mensual (13 ciudades)")
+```
+
+
+```{r test_data, include=FALSE}
+# Separacion de datos de prueba
+ocupados.training <- window(ocupados.ts, end = c(2018, 4))
+ocupados.test <- window(ocupados.ts, start = c(2018, 5))
+```
+
+```{r models, include=FALSE}
+#
+# # Creacion de modelos
+#
+# Se crean modelos con tendencia y componente estacional.
+res.t.pol.1.season <- tslm(ocupados.training ~ poly(trend, 1) + season, data = ocupados.training)
+res.t.pol.2.season <- tslm(ocupados.training ~ poly(trend, 2) + season, data = ocupados.training)
+res.t.pol.3.season <- tslm(ocupados.training ~ poly(trend, 3) + season, data = ocupados.training)
+res.t.pol.4.season <- tslm(ocupados.training ~ poly(trend, 4) + season, data = ocupados.training)
+res.t.pol.5.season <- tslm(ocupados.training ~ poly(trend, 5) + season, data = ocupados.training)
+res.t.pol.6.season <- tslm(ocupados.training ~ poly(trend, 6) + season, data = ocupados.training)
+res.t.pol.7.season <- tslm(ocupados.training ~ poly(trend, 7) + season, data = ocupados.training)
+res.t.pol.8.season <- tslm(ocupados.training ~ poly(trend, 8) + season, data = ocupados.training)
+res.t.pol.9.season <- tslm(ocupados.training ~ poly(trend, 9) + season, data = ocupados.training)
+res.t.pol.10.season <- tslm(ocupados.training ~ poly(trend, 10) + season, data = ocupados.training)
+```
+
+
+```{r eval_models, include=FALSE}
+
+# Evaluacion de supuestos
+
+# Se evaluan los supuestos de los erorres de los modelos.
+## Autocorrelacion
+tabla.Box.Pierce <- function(residuo, max.lag = 20,
+                             type = "Box-Pierce") {
+  # se crean objetos para guardar los resultados
+  BP.estadistico <- matrix(0, max.lag, 1)
+  BP.pval <- matrix(0, max.lag, 1)
+
+  # se calcula la prueba para los diferentes rezagos
+  for (i in 1:max.lag) {
+    BP <- Box.test(residuo, lag = i, type = type)
+    BP.estadistico[i] <- BP$statistic
+    BP.pval[i] <- round(BP$p.value, 5)
+  }
+  labels <- c("Rezagos", type, "p-valor")
+
+  Cuerpo.Tabla <- cbind(
+    matrix(1:max.lag, max.lag, 1),
+    BP.estadistico, BP.pval
+  )
+  TABLABP <- data.frame(Cuerpo.Tabla)
+  names(TABLABP) <- labels
+  return(TABLABP)
+}
+
+tabla.Box.Pierce(resid(res.t.pol.1.season))
+tabla.Box.Pierce(resid(res.t.pol.2.season))
+tabla.Box.Pierce(resid(res.t.pol.3.season))
+tabla.Box.Pierce(resid(res.t.pol.4.season))
+tabla.Box.Pierce(resid(res.t.pol.5.season))
+tabla.Box.Pierce(resid(res.t.pol.6.season))
+tabla.Box.Pierce(resid(res.t.pol.7.season))
+tabla.Box.Pierce(resid(res.t.pol.8.season))
+tabla.Box.Pierce(resid(res.t.pol.9.season))
+tabla.Box.Pierce(resid(res.t.pol.10.season))
+# Se concluye que ningun modelo presenta autocorrelacion de los errores.
+```
+
+
+
+```{r homosc, include=FALSE}
+# Homoscedasticidad
+# Se hace la prueba de Ljung-Box.
+tabla.Box.Pierce(resid(res.t.pol.1.season)^2, type = "Ljung-Box")
+tabla.Box.Pierce(resid(res.t.pol.2.season)^2, type = "Ljung-Box")
+tabla.Box.Pierce(resid(res.t.pol.3.season)^2, type = "Ljung-Box")
+tabla.Box.Pierce(resid(res.t.pol.4.season)^2, type = "Ljung-Box")
+tabla.Box.Pierce(resid(res.t.pol.5.season)^2, type = "Ljung-Box")
+tabla.Box.Pierce(resid(res.t.pol.6.season)^2, type = "Ljung-Box")
+tabla.Box.Pierce(resid(res.t.pol.7.season)^2, type = "Ljung-Box")
+tabla.Box.Pierce(resid(res.t.pol.8.season)^2, type = "Ljung-Box")
+tabla.Box.Pierce(resid(res.t.pol.9.season)^2, type = "Ljung-Box")
+tabla.Box.Pierce(resid(res.t.pol.10.season)^2, type = "Ljung-Box")
+# Se concluye que ningun modelo presenta comportamiento ARCH o GARCH.
+```
+
+
+```{r norm, include=FALSE}
+#
+# # Normalidad
+#
+# Se prueba normalidad de los errores.
+jarque.bera.test(resid(res.t.pol.1.season))
+jarque.bera.test(resid(res.t.pol.2.season))
+jarque.bera.test(resid(res.t.pol.3.season))
+jarque.bera.test(resid(res.t.pol.4.season))
+jarque.bera.test(resid(res.t.pol.5.season))
+jarque.bera.test(resid(res.t.pol.6.season))
+jarque.bera.test(resid(res.t.pol.7.season))
+jarque.bera.test(resid(res.t.pol.8.season))
+jarque.bera.test(resid(res.t.pol.9.season))
+jarque.bera.test(resid(res.t.pol.10.season))
+
+# No se puede rechazar la hipotesis nula de normalidad, concluimos que todos los residuos se comportan normalmente.
+```
+
+
+
+```{r eval_test, include=FALSE}
+# Evaluacion de modelos
+
+# Se estiman modelos con combinaciones de tendencia y estacionalidad.
+RMSE <- as.data.frame(matrix(NA, nrow = 1, ncol = length(1:10)))
+
+for (j in 1:10) {
+  colnames(RMSE)[j] <- noquote(paste("pol", j, "season", sep = "."))
+
+  Pronosticos <- forecast(tslm(ocupados.training ~ poly(trend, order = j) + season, ocupados.training), h = 12)$mean
+
+  RMSE[, j] <- accuracy(Pronosticos, ocupados.test)["Test set", "RMSE"]
+}
+
+RMSE
+
+# Entre los modelos se encuentra que el de orden polinomial 6 es el mejor, segun la evaluacion en el test set basado en el RMSE.
+```
+
+Para generar pronosticos de los Ocupados en Colombia en el proximo año, se estiman 10 modelos que incluyen componentes estacionales y de tendencia. A cada uno de estos modelos se le realizan pruebas estadisticas para verificar los supuestos que validan las conclusiones estadisticas de los modelos, es decir, sus predicciones. 
+
+Para todos los modelos se concluye que el sus residuos cumplen con todos los supuestos, por lo tanto se emplea cross-validation para encontrar el mejor modelo entre estos 10. Se encuentra que el mejor modelo es aquel que incluye una tendencia polinomica de orden 3 y un componente estacional. Las predicciones entregadas por el modelo son:
+
+```{r pred}
+pronostico <- forecast(tslm(ocupados.ts ~ poly(trend, 3) + season, ocupados.ts), h = 12)
+library(ggplot2)
+autoplot(pronostico) + ggtitle("Pronóstico para el próximo año de los Ocupados con tendencia polinómica \n (13 ciudades)")
+
+Pronsoticos <- hw(ocupados.ts, h = 12, seasonal = "additive")
+Pronosticos
+```
