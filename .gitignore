@@ -9,3 +9,7 @@
 *.Rproj
 *.swp
 *.zip
+*.rdb
+*.rdx
+**/solution_cache/**
+**/solution_files/**

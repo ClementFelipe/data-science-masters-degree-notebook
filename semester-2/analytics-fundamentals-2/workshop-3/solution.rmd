@@ -1,0 +1,67 @@
+---
+title: "Taller 3 - Modelo ARIMA"
+author: "Lina Quintero - Felipe Clement"
+---
+
+```{r installs, include=FALSE}
+library(readxl)
+library(forecast)
+library(tseries)
+library(ftsa)
+```
+
+# Carga de datos
+
+```{r load}
+data <- read_excel("datosEmpleo.xlsx", col_types = c("date", "numeric", "numeric", "numeric", "numeric"))
+
+data_ts <- ts(data[, -1], start = c(2001, 1), frequency = 12)
+
+ocupados <- data_ts[, 2]
+
+ts.plot(ocupados, main = "Ocupados mensual (13 ciudades)")
+```
+
+```{r test_set}
+ocupados_training <- window(ocupados, end = c(2018, 4))
+ocupados_test <- window(ocupados, start = c(2018, 5))
+```
+
+```{r models, cache=TRUE}
+model_arima <- auto.arima(ocupados_training,
+  stepwise = FALSE,
+  stationary = TRUE,
+  parallel = TRUE
+)
+
+model_regression <- tslm(ocupados_training ~ poly(trend, 3) + season, data = ocupados_training)
+```
+
+Para la estimación de los próximos 6 meses del número de personas ocupadas en Colombia, se analizaron mútiples modelos de series de tiempo. El modelo escogido es el resultante de un proceso automático de selección entre diferentes modelos ARIMA y un modelo de tendencia polinómica de orden 3, el cual tiene en cuenta la estacionalidad. 
+
+Finalmente el modelo escogido fue un ARIMA con componentes autoregresivos en t - 1, 2, 3, 12, 24.
+
+Se generaron dos conjuntos de datos, uno para escoger y entrenar el modelo y otro para su evaluación contra el modelo de regresión. 
+
+El modelo ARIMA escogido se encontró probando todas las posibles combinaciones de las partes auto regresivas, media movil, auto regresivas estacionales y media móvil estacional.
+Posteriormente, se generaron pronósticos para el conjunto de datos de prueba con ambos modelos y el de menor RMSE fue el de regresión, pero se escoge el modelo ARIMA debido a que el de regresion no cumple los supuestos y el ARIMA si. 
+
+Los pronósticos generados por el modelo se crearon a partir de todos los datos de entrenamiento para los siguientes 6 meses. A continuación se presentan los resultados: 
+
+```{r res_num}
+arima_pred <- forecast(model_arima, h = 12)
+regression_pred <- forecast(model_regression, h = 12)
+
+arima_rmse <- error(arima_pred$mean, true = ocupados_test, method = "rmse")
+regression_rmse <- error(regression_pred$mean, true = ocupados_test, method = "rmse")
+```
+
+```{r res_nummm}
+arima_pred$mean
+```
+
+Y se pueden visualizar de la siguiente manera:
+
+```{r res_chart}
+autoplot(forecast(model_arima, h = 6))
+```
